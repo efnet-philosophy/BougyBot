@@ -16,12 +16,14 @@ module BougyBot
     end
 
     def self.recent
-      filter{ Time.now - last > 180 }.all
+      order(Sequel.desc(:last)).limit(35).all.select do |r|
+        Time.now - r.last < 180
+      end
     end
 
     def self.abuser?(nick)
       return true if recent.size > 30
-      recent.select { |r| r.by == nick } > 10
+      recent.select { |r| r.by == nick }.size > 10
     end
 
     def old?
