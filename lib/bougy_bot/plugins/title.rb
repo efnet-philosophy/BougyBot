@@ -17,28 +17,13 @@ module BougyBot
     def initialize(*args)
       @abuse = {}
       @uses  = []
-    end
-
-    def abuse?(nick)
-      now = Time.now
-      @abuse[nick] ||= []
-      @abuse[nick].unshift now
-      @abuse[nick] = @abuse[nick][0,10].compact
-      @abuse[nick].select { |t| now - t < 180 }.size > 5
-    end
-
-    def abused
-      now = Time.now
-      @uses.unshift now
-      @uses = @uses[0.35].compact
-      @uses.select { |t| now - t < 180 }.size > 30
+      super
     end
 
     def listen(m)
       nick = m.user.nick
-      return if abuse? nick
-      return if abused
       return if nick == bot.nick
+      return if Url.abuser? nick
       urls = URI.extract(m.message, %w(http https))
       urls.each do |u|
         m.reply Url.heard(u, nick).display_for(nick)

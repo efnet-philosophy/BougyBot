@@ -15,6 +15,15 @@ module BougyBot
       (find(original: url) || new(original: url, by: name)).save
     end
 
+    def self.recent
+      filter{ Time.now - last > 180 }.all
+    end
+
+    def self.abuser?(nick)
+      return true if recent.size > 30
+      recent.select { |r| r.by == nick } > 10
+    end
+
     def old?
       times > 1
     end
