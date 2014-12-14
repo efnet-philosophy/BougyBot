@@ -21,13 +21,14 @@ module BougyBot
       u.save
     end
 
-    def self.recent
+    def self.recent(secs = 180)
       order(Sequel.desc(:last)).limit(35).all.select do |r|
-        Time.now - r.last < 180
+        Time.now - r.last < secs
       end
     end
 
     def self.abuser?(nick)
+      return true if recent(86400).size > 24
       return true if recent.size > 30
       recent.select { |r| r.by == nick }.size > 10
     end
