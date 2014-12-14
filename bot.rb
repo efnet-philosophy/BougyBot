@@ -2,6 +2,10 @@
 require 'sequel'
 require_relative './lib/bougy_bot'
 Sequel.connect BougyBot.options[:db]
+BougyBot::M 'user'
+BougyBot::M 'mask'
+BougyBot::M 'channel'
+BougyBot::M 'log'
 BougyBot::M 'url'
 BougyBot::L 'cinch'
 

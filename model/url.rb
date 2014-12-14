@@ -1,3 +1,6 @@
+require 'nokogiri'
+require 'json'
+require 'rest-client'
 # Bot namespace
 module BougyBot
   Url = Class.new Sequel::Model
@@ -10,9 +13,12 @@ module BougyBot
            update: :last,
            force: true,
            update_on_create: true
+    many_to_one :channel
 
-    def self.heard(url, name)
-      (find(original: url) || new(original: url, by: name)).save
+    def self.heard(url, name, channel_id)
+      u = find original: url, channel_id: channel_id
+      u ||= new(original: url, by: name, channel_id: channel_id)
+      u.save
     end
 
     def self.recent
@@ -64,22 +70,38 @@ module BougyBot
     end
 
     def default_title
-      case original
+      fname = File.basename(original)
+      case fname
       when /(?:jpg|png|gif)$/
-        "Some Random Image named #{File.basename(original)}"
+        "Some Random Image named #{fname}"
       when /(?:avi|mpg|wmv)$/
-        "Some Random Video named #{File.basename(original)}"
+        "Some Random Video named #{fname}"
       else
-        'Untitled Randomness: #{File.basename(original)}'
+        "Untitled Randomness: #{fname}"
       end
     end
 
-    def fetch_title
+    # rubocop:disable Metrics/LineLength
+    # urls are long, mmkay?
+    def fetch_title(wikipedia = true)
+      return wikipedia_synopsis if original =~ %r{https://en\.wikipedia\.org/wiki/} && wikipedia
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
       return title.first.text if title && title.first
       default_title
+    end
+
+    def wikipedia_synopsis
+      term = File.basename(original)
+      req = "http://en.wikipedia.org/w/api.php?action=parse&page=#{term}&format=json&prop=text&section=0"
+      r = RestClient.get(req,
+                         'USER_AGENT' => 'Philosophy IRC Robot. tj@rubyists.com')
+
+      Nokogiri(JSON.parse(r)['parse']['text']['*'].scan(/<p>.*?<\/p>/m).first).text
+    # rubocop:enable Metrics/LineLength
+    rescue
+      fetch_title(false)
     end
 
     def shorten_url

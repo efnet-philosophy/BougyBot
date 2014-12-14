@@ -25,17 +25,32 @@ module BougyBot
       @abuse[nick] ||= []
       @abuse[nick] << now
       @abuse[nick] = @abuse[nick].sort.reverse[0..15]
-      @abuse[nick].select { |t| now - t < 180 }.size > 10
+      abusive? @abuse[nick]
+    end
+
+    def abusive?(times)
+      now = Time.now
+      times.select { |t| now - t < 180 }.size > 10
     end
 
     def listen(m)
       nick = m.user.nick
       return if nick == bot.nick
+      return if nick =~ /^(?:GitHub|xbps-builder$|void-packages$)/
+      log = do_log m
       return if abuser? nick
       return if Url.abuser? nick
+      title_urls m, log.channel_id
+    end
+
+    def do_log(m)
+      ChanLog.heard m.channel, m.user, m.message
+    end
+
+    def title_urls(m, channel_id)
       urls = URI.extract(m.message, %w(http https))
       urls.each do |u|
-        m.reply Url.heard(u, nick).display_for(nick)
+        m.reply Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
       end
     end
   end
