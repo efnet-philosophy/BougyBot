@@ -28,9 +28,12 @@ module BougyBot
     end
 
     def self.abuser?(nick)
-      return true if recent(86400).size > 24
-      return true if recent.size > 30
-      recent.select { |r| r.by == nick }.size > 10
+      today = recent 86400
+      soon  = recent 240
+      return true if today.count > 200
+      return true if soon.count > 30
+      return true if today.select { |r| r.by == nick }.size > 24
+      soon.select { |r| r.by == nick }.size > 10
     end
 
     def old?
