@@ -84,7 +84,7 @@ module BougyBot
     # rubocop:disable Metrics/LineLength
     # urls are long, mmkay?
     def fetch_title(wikipedia = true)
-      return wikipedia_synopsis if original =~ %r{https://en\.wikipedia\.org/wiki/} && wikipedia
+      return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
