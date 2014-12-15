@@ -41,9 +41,11 @@ module BougyBot
       def abuser?(nick)
         now = Time.now
         ab = self.class.abuse
+        all = self.class.all
         synchronize(:abuser) do
           ab[nick] ||= []
           ab[nick] << now
+          all << now
           ab[nick] = ab[nick].sort.reverse[0..25]
         end
         abusive? ab[nick]

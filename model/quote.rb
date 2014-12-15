@@ -16,7 +16,9 @@ module BougyBot
     set_dataset :quotes
 
     def self.best(query)
-      q = filter(Sequel.or(author: /\y#{query}\y/i, quote: /\y#{query}\y/i)).all.sample
+      user = User.find(nick: query)
+      return ChanLog.filter(user_id: user.id).all.sample if user
+      q = filter(Sequel.or(author: /\y#{query}\y/i, quote: /\y#{query}\y/i)).all.sample # rubocop:disable Metrics/LineLength
       q || Dstring.new('No Dice')
     end
 
