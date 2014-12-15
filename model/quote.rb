@@ -15,9 +15,13 @@ module BougyBot
   class Quote
     set_dataset :quotes
 
+    # return value must respond to #display
     def self.best(query)
       user = User.find(nick: query)
-      return ChanLog.filter(user_id: user.id).all.sample if user
+      if user
+        log = ChanLog.filter(user_id: user.id).all.sample
+        return Dstring.new(format('%s -- %s', log.message, user.nick))
+      end
       q = filter(Sequel.or(author: /\y#{query}\y/i, quote: /\y#{query}\y/i)).all.sample # rubocop:disable Metrics/LineLength
       q || Dstring.new('No Dice')
     end
@@ -42,10 +46,23 @@ module BougyBot
     attr_reader :url, :name
     BARE = 'http://www.brainyquote.com/'
 
+    def self.get_all_for(letter)
+      one, doc = all_authors(letter)
+      some = one.map { |link| new(File.join(BARE, link), link).quotes }
+      if np = next_page(doc)
+        some += get_all_for(np)
+      end
+      some
+    end
+
     def self.all_authors(letter)
       link = "http://www.brainyquote.com/quotes/#{letter}.html"
       page = open(link).read
-      Nokogiri(page)
+      doc = Nokogiri(page)
+      author_urls = doc.css('div.bq_s>table')
+        .first
+        .css('a').map { |n| n[:href] }
+      [author_urls, doc]
     end
 
     def self.next_page(doc)
