@@ -53,11 +53,11 @@ module BougyBot
         times.select { |t| now - t < 30 }.size > 1 * level
       end
 
-      def abuse2?(times, level)
+      def abuse2?(times, level, now = Time.now)
         times.select { |t| now - t < 180 }.size > 3 * level
       end
 
-      def abuse3?(times, level)
+      def abuse3?(times, level, now = Time.now)
         times.select { |t| now - t < 86_400 }.size > 24 * level
       end
 
@@ -66,7 +66,9 @@ module BougyBot
         now = Time.now
         args = [times, level, now]
         abuse1?(*args) || abuse2?(*args) || abuse3?(*args)
-      rescue
+      rescue => e
+        log "Wtf abusive? #{times}: #{level}", :warn
+        log e.to_s, :warn
         true
       end
 
