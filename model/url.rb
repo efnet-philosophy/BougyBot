@@ -42,14 +42,14 @@ module BougyBot
 
     def display_for(nick)
       if old?
-        format('%s: OLD! First shared by %s %s. "%s" (%s)',
-               by,
+        format('%s: OLD! First shared by %s on %s. "%s" (%s)',
+               nick,
                by == nick ? 'You' : by,
                pretty_at,
                title,
                short)
       else
-        format('%s: "%s" (%s)', by, title, short)
+        format('%s: "%s" (%s)', nick, title, short)
       end
     end
 

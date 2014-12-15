@@ -1,5 +1,6 @@
 module BougyBot
   module Plugins
+    # Bot Functions
     class Functions
       include Cinch::Plugin
       match(/^\.chug ?(\d+)?$/, method: :chug, use_prefix: false)
