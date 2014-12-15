@@ -48,12 +48,26 @@ module BougyBot
         end
         abusive? ab[nick]
       end
+
+      def abuse1?(times, level, now = Time.now)
+        times.select { |t| now - t < 30 }.size > 1 * level
+      end
+
+      def abuse2?(times, level)
+        times.select { |t| now - t < 180 }.size > 3 * level
+      end
+
+      def abuse3?(times, level)
+        times.select { |t| now - t < 86_400 }.size > 24 * level
+      end
+
       # rubocop:disable Metrics/AbcSize
       def abusive?(times, level = 1)
         now = Time.now
-        return true if times.select { |t| now - t < 30 * level }.size > 1
-        return true if times.select { |t| now - t < 180 * level }.size > 5
-        times.select { |t| now - t < 86_400 * level }.size > 24
+        args = [times, level, now]
+        abuse1?(*args) || abuse2?(*args) || abuse3?(*args)
+      rescue
+        true
       end
 
       def execute(m, query)
