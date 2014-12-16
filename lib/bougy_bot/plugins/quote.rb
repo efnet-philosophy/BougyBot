@@ -22,7 +22,8 @@ module BougyBot
       # rubocop:enable Style/TrivialAccessors
 
       include ::Cinch::Plugin
-      match(/(?:q|qu|quo|quot|quote)(?: (.*))?$/)
+      match(/q(?: ?(.*))?$/, method: :quote)
+      match(/(?:countq)$/, method: :count)
 
       def initialize(*args)
         super
@@ -33,11 +34,15 @@ module BougyBot
         all = self.class.all
         syncronize(:abuse) do
           all << now
-          all = ab[nick].sort.reverse[0..180]
+          all = all.sort.reverse[0..180]
         end
         abusive? all, 3
+      rescue => e
+        log.warn "Error in abuse?: #{e}"
+        true
       end
 
+      # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
       def abuser?(nick)
         now = Time.now
         ab = self.class.abuse
@@ -49,7 +54,11 @@ module BougyBot
           ab[nick] = ab[nick].sort.reverse[0..25]
         end
         abusive? ab[nick]
+      rescue
+        log.warn "Error in abuse?: #{e}"
+        true
       end
+      # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
       def abuse1?(times, level, now = Time.now)
         times.select { |t| now - t < 30 }.size > 1 * level
@@ -74,8 +83,13 @@ module BougyBot
         true
       end
 
-      def execute(m, query)
-        return if abuser?(m.user.nick)
+      def count(m)
+        return if abuser?(m.user.host)
+        m.reply "Currently #{Quote.summary}"
+      end
+
+      def quote(m, query)
+        return if abuser?(m.user.host)
         return m.reply Quote.sample.display if query.nil? || query == ''
         m.reply Quote.best(query).display
       rescue => e

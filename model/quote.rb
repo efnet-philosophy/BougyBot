@@ -10,6 +10,12 @@ module BougyBot
     end
   end
 
+  def self.html_for_url(url)
+    puts "getting #{url}" if BougyBot.options[:debug]
+    sleep rand(10)
+    open(url).read
+  end
+
   Quote = Class.new(Sequel::Model)
   # A quote
   class Quote
@@ -24,6 +30,10 @@ module BougyBot
       end
       q = filter(Sequel.or(author: /\y#{query}\y/i, quote: /\y#{query}\y/i)).all.sample # rubocop:disable Metrics/LineLength
       q || Dstring.new('No Dice')
+    end
+
+    def self.summary
+      "#{Quote.count} quotes by #{Quote.distinct(:author).count} people"
     end
 
     def self.create_or_update(quote, author, tags)
@@ -44,24 +54,44 @@ module BougyBot
   # Brainyquotes support
   class Brainy
     attr_reader :url, :name
-    BARE = 'http://www.brainyquote.com/'
+    #BARE = 'http://www.brainyquote.com'
+    BARE = 'http://[2400:cb00:2048:1::be5d:f01a]'
 
-    def self.get_all_for(letter)
+    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/LineLength
+    def self.get_all_for(letter, ignore_until = nil)
+      ignore = ignore_until
       one, doc = all_authors(letter)
-      some = one.map { |link| new(File.join(BARE, link), link).quotes }
-      if np = next_page(doc)
-        some += get_all_for(np)
+      some = one.map do |link|
+        l = File.join(BARE, link)
+        f = File.basename(link, '.html')
+        if ignore && ignore_until != f
+          puts "Ignoring #{f}" if BougyBot.options[:debug]
+          next
+        elsif ignore && ignore_until == f
+          puts "We got #{f}, stop ignoring" if BougyBot.options[:debug]
+          ignore = false
+          next
+        end
+        from_name(f).map { |n| n.quotes }.flatten
+      end.compact
+      if np = next_page(doc) # rubocop:disable Lint/AssignmentInCondition
+        puts "Next page is #{np}" if BougyBot.options[:debug]
+        binding.pry if BougyBot.options[:debugger] # rubocop:disable all
+        nl = File.basename np, '.html'
+        puts "Next letter is #{nl}" if BougyBot.options[:debug]
+        some += get_all_for(nl)
       end
       some
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/LineLength
 
     def self.all_authors(letter)
-      link = "http://www.brainyquote.com/quotes/#{letter}.html"
-      page = open(link).read
+      link = "#{BARE}/quotes/#{letter}.html"
+      page = BougyBot.html_for_url(link)
       doc = Nokogiri(page)
       author_urls = doc.css('div.bq_s>table')
-        .first
-        .css('a').map { |n| n[:href] }
+                    .first
+                    .css('a').map { |n| n[:href] }
       [author_urls, doc]
     end
 
@@ -74,7 +104,7 @@ module BougyBot
     end
 
     def self.from_name(name)
-      link = 'http://www.brainyquote.com/quotes/authors/%s/%s.html'
+      link = format('%s/quotes/authors/%s/%s.html', BARE)
       pages = []
       pages << new(format(link, name[0, 1], name), name)
       # rubocop:disable Lint/AssignmentInCondition
@@ -103,7 +133,7 @@ module BougyBot
     private
 
     def page
-      @page ||= open(url).read
+      @page ||= BougyBot.html_for_url(url)
     end
 
     def doc
@@ -127,55 +157,3 @@ module BougyBot
     end
   end
 end
-
-__END__
-
-require 'open-uri'
-page = open('http://www.brainyquote.com/quotes/authors/b/bill_murray.html').read;nil
-doc = Nokogiri(page);nil
-doc
-doc.css('span[class:bqQuoteLink')
-doc.css('span[class=bqQuoteLink')
-doc.css('span[class=bqQuoteLink]')
-doc.css('span[class=bqQuoteLink]').first
-qs = doc.css('span[class=bqQuoteLink]');nil
-qs.size
-qs.first
-qs.first.xpath("/a")
-qs.first.xpath("//a")
-qs.first.xpath("a")
-qs.first.xpath("a").text
-qs.map { |n| n.xpath('a').text }
-qs.first
-qs.first.siblings
-qs.first.sibling
-qs.first.next
-qs.first.next.next
-qs.first.next.next.next
-qs.first.next.next.next.next
-qs.first.next.next.next.next.next
-qs.first.next.next.next.next.next.next
-qs.first.next.siblings
-qs.first.next
-that = _
-that.public_methods(false)
-that.public_methods
-that.next_sibling
-that.next_sibling.next_sibling
-that.parent
-that.parent.parent
-qs.first.parent
-qs.first.parent.parent
-qdivs = doc.css('div[class=bqQt]');nil
-qdivs.first
-qs.first.parent.parent
-qdivs = doc.css('div.bqQt]');nil
-qdivs = doc.css('div.bqQt');nil
-qdivs.first
-qdivs.first.css('div.bq_boxyRelatedLeft')
-qdivs.first.css('div.bq_boxyRelatedLeft').text
-qdivs.first.css('div.bq_boxyRelatedLeft>a')
-qdivs.first.css('div.bq_boxyRelatedLeft>a').first
-qdivs.first.css('div.bq_boxyRelatedLeft>a').first.text
-qdivs.first.css('div.bq_boxyRelatedLeft>a')
-exit
