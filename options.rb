@@ -13,6 +13,10 @@ module BougyBot
     o "Debug Output", :debug, ENV['BougyBot_Debug']
 
     o "Debugger Hooks (pry)", :debugger, ENV['BougyBot_Debugger']
+
+    o "No Long Sleep", :nodoze, ENV['BougyBot_Nodoze']
+
+    o "Sleep", :sleeps, ([10] * 100) + ([30] * 50) + ([60] * 25) + ([100] * 10) + ([500] * 5) + [1000]
   end
 
 end

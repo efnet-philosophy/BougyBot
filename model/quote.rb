@@ -10,9 +10,18 @@ module BougyBot
     end
   end
 
+  def self.randit
+    if (6..14).to_a.include?(Time.now.utc.hour) && !BougyBot.options[:nodoze]
+      puts 'Bed Time, long sleep!' if BougyBot.options[:debug]
+      return 7 * 60 * 60
+    end
+    rand BougyBot.options.sleeps.sample
+  end
+
   def self.html_for_url(url)
-    puts "getting #{url}" if BougyBot.options[:debug]
-    sleep rand(10)
+    r = randit
+    puts "sleeping #{r} then getting #{url}" if BougyBot.options[:debug]
+    sleep r
     open(url).read
   end
 
@@ -54,36 +63,49 @@ module BougyBot
   # Brainyquotes support
   class Brainy
     attr_reader :url, :name
-    #BARE = 'http://www.brainyquote.com'
-    BARE = 'http://[2400:cb00:2048:1::be5d:f01a]'
+    BARE = 'http://www.brainyquote.com'
 
-    # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/LineLength
-    def self.get_all_for(letter, ignore_until = nil)
-      ignore = ignore_until
-      one, doc = all_authors(letter)
-      some = one.map do |link|
-        l = File.join(BARE, link)
+    def self.prune_ignores(links, ignore)
+      dbg = BougyBot.options[:debug]
+      fnames = links.map { |l| File.basename(l, '.html') }
+      if fnames.include?(ignore)
+        ind = fnames.index(ignore) + 1
+        puts "Ignoring #{ind} links on this page" if dbg
+        return [links[ind..-1], nil]
+      end
+      puts "Ignoring all #{links.size} links on this page" if dbg
+      [[], ignore]
+    end
+
+    def self.unignored_links(links,  ignore)
+      links, ignore = prune_ignores(links, ignore) if ignore
+      [links.sort { rand(10) <=> rand(10) }, ignore] # rubocop:disable Lint/UselessComparison, Metrics/LineLength
+    end
+
+    def self.links_to_quotes(links, ignore = nil)
+      ls, ignore = unignored_links(links, ignore)
+      quotes = ls.map do |link|
         f = File.basename(link, '.html')
-        if ignore && ignore_until != f
-          puts "Ignoring #{f}" if BougyBot.options[:debug]
-          next
-        elsif ignore && ignore_until == f
-          puts "We got #{f}, stop ignoring" if BougyBot.options[:debug]
-          ignore = false
-          next
-        end
-        from_name(f).map { |n| n.quotes }.flatten
-      end.compact
+        from_name(f).map(&:quotes).flatten
+      end
+      [quotes, ignore]
+    end
+
+    # rubocop:disable Metrics/AbcSize
+    def self.get_all_for(letter, ignore = nil)
+      links, doc = all_authors(letter)
+      some, ignore = links_to_quotes(links, ignore)
       if np = next_page(doc) # rubocop:disable Lint/AssignmentInCondition
         puts "Next page is #{np}" if BougyBot.options[:debug]
         binding.pry if BougyBot.options[:debugger] # rubocop:disable all
         nl = File.basename np, '.html'
         puts "Next letter is #{nl}" if BougyBot.options[:debug]
-        some += get_all_for(nl)
+        more, ignore = get_all_for(nl, ignore)
+        some += more
       end
       some
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/MethodLength, Metrics/LineLength
+    # rubocop:enable Metrics/AbcSize
 
     def self.all_authors(letter)
       link = "#{BARE}/quotes/#{letter}.html"
@@ -104,7 +126,7 @@ module BougyBot
     end
 
     def self.from_name(name)
-      link = format('%s/quotes/authors/%s/%s.html', BARE)
+      link = "#{BARE}/quotes/authors/%s/%s.html"
       pages = []
       pages << new(format(link, name[0, 1], name), name)
       # rubocop:disable Lint/AssignmentInCondition
