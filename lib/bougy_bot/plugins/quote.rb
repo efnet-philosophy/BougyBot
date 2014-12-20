@@ -54,22 +54,32 @@ module BougyBot
           ab[nick] = ab[nick].sort.reverse[0..25]
         end
         abusive? ab[nick]
-      rescue
+      rescue => e
         log.warn "Error in abuse?: #{e}"
+        log.warn "Error in abuse?: #{e.backtrace.join("\n")}}"
         true
       end
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
-      def abuse1?(times, level, now = Time.now)
-        times.select { |t| now - t < 30 }.size > 1
+      def abuse_level?(times, comparitor, seconds, now)
+        times.select { |t| now - t < seconds }.size > comparitor
+      end
+
+      def abuse1?(times, _, now = Time.now)
+        return '> 1 in 30 seconds' if abuse_level?(times, 1, 30, now)
+        nil
       end
 
       def abuse2?(times, level, now = Time.now)
-        times.select { |t| now - t < 180 }.size > 3 * level
+        l = 3 * level
+        return "> #{l} in 3 minutes" if abuse_level?(times, l, 180, now)
+        nil
       end
 
       def abuse3?(times, level, now = Time.now)
-        times.select { |t| now - t < 86_400 }.size > 24 * level
+        l = 24 * level
+        return "> #{l} in 24 hours" if abuse_level?(times, l, 86_400, now)
+        nil
       end
 
       # rubocop:disable Metrics/AbcSize
@@ -89,7 +99,8 @@ module BougyBot
       end
 
       def quote(m, query)
-        return m.user.send('THROTTLED!') if abuser?(m.user.host)
+        abuse_message = abuser?(m.user.host)
+        return m.user.send("THROTTLED! (#{abuse_message})") if abuse_message
         return m.reply Quote.sample.display if query.nil? || query == ''
         m.reply Quote.best(query).display
       rescue => e
