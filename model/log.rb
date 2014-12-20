@@ -16,5 +16,9 @@ module BougyBot
              user_id: user.id,
              channel_id: chan.id)
     end
+
+    def display
+      format('%s -- %s', message, nick)
+    end
   end
 end

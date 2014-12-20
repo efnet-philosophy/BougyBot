@@ -61,7 +61,7 @@ module BougyBot
       # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
 
       def abuse1?(times, level, now = Time.now)
-        times.select { |t| now - t < 30 }.size > 1 * level
+        times.select { |t| now - t < 30 }.size > 1
       end
 
       def abuse2?(times, level, now = Time.now)
@@ -89,7 +89,7 @@ module BougyBot
       end
 
       def quote(m, query)
-        return if abuser?(m.user.host)
+        return m.user.send('THROTTLED!') if abuser?(m.user.host)
         return m.reply Quote.sample.display if query.nil? || query == ''
         m.reply Quote.best(query).display
       rescue => e

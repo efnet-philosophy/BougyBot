@@ -30,15 +30,23 @@ module BougyBot
   class Quote
     set_dataset :quotes
 
+    def self.author_quotes(string)
+      author, *q = string.split
+      au_ds = filter(author: /\y#{author}\y/i)
+      au_ds = au_ds.filter(quote: /\y#{q.join(" ")}\y/i) if q.size > 0
+      au_ds.all
+    end
+
     # return value must respond to #display
     def self.best(query)
-      user = User.find(nick: query)
-      if user
-        log = ChanLog.filter(user_id: user.id).all.sample
-        return Dstring.new(format('%s -- %s', log.message, user.nick))
-      end
-      q = filter(Sequel.or(author: /\y#{query}\y/i, quote: /\y#{query}\y/i)).all.sample # rubocop:disable Metrics/LineLength
+      raw_quotes = filter(quote: /\y#{query}\y/).all
+      uquotes = User.quotes_for(query)
+      aquotes = author_quotes(query)
+      q = (aquotes + uquotes + raw_quotes).uniq.compact.sample
       q || Dstring.new('No Dice')
+    rescue => e
+      warn "Wtf in best? #{e}"
+      Dstring.new('No Dice')
     end
 
     def self.summary
