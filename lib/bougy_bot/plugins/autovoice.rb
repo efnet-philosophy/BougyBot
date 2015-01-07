@@ -9,7 +9,7 @@ module BougyBot
   module Plugins
     # The autovoice functions
     class Autovoice
-      include Cinch::Plugin
+      include ::Cinch::Plugin
       listen_to :join
       match(/autovoice (on|off)$/)
 
@@ -19,7 +19,7 @@ module BougyBot
       end
 
       def listen(m)
-        return unless m.user.nick == bot.nick
+        return if m.user.nick == bot.nick
         m.channel.voice(m.user) if @autovoice
       end
 

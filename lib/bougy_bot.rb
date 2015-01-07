@@ -1,5 +1,6 @@
-require "pathname"
-require "logger"
+require 'pathname'
+require 'logger'
+$LOAD_PATH.unshift File.join(ENV['HOME'], 'g/cleverbot/lib')
 
 # Allows for pathnames to be easily added to
 class Pathname
@@ -33,6 +34,15 @@ module BougyBot
   # @file String The file you wish to load
   def self.L(file)
     require (BougyBot::LIBROOT/:bougy_bot).join(file).to_s
+  end
+
+  def self.t(things)
+    tto = options.talk_to
+    things = Array(things)
+    things.each do |thing|
+      tto.include?(thing) ? tto.delete(thing) : (tto << thing)
+    end
+    tto
   end
 
   def self.Run(*args)

@@ -8,6 +8,7 @@ module BougyBot
   class Url
     set_dataset :urls
     TINYURL_EXPIRE = 86_400 * 7 # 7 days
+    TLIMIT = 256
     plugin :timestamps,
            create: :at,
            update: :last,
@@ -27,6 +28,11 @@ module BougyBot
       end
     end
 
+    def old?
+      times > 1
+    end
+
+    # rubocop:disable Metrics/AbcSize
     def self.abuser?(nick)
       today = recent 86_400
       soon  = recent 240
@@ -36,8 +42,10 @@ module BougyBot
       soon.select { |r| r.by == nick }.size > 10
     end
 
-    def old?
-      times > 1
+    def short_title
+      return @short_title if @short_title
+      st = title.size > TLIMIT ? "#{title[0..TLIMIT]}..." : title
+      @short_title = st.gsub(/\n/, ' ').strip
     end
 
     def display_for(nick)
@@ -46,12 +54,13 @@ module BougyBot
                nick,
                by == nick ? 'You' : by,
                pretty_at,
-               title,
+               short_title,
                short)
       else
-        format('%s: "%s" (%s)', nick, title, short)
+        format('%s: "%s" (%s)', nick, short_title, short)
       end
     end
+    # rubocop:enable Metrics/AbcSize
 
     private
 
@@ -92,8 +101,8 @@ module BougyBot
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
-      return title.first.text if title && title.first
-      default_title
+      return default_title unless title && title.first
+      title.first.text
     end
 
     def wikipedia_synopsis

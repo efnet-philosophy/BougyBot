@@ -9,10 +9,15 @@ module BougyBot
     one_to_many :chan_logs
     QUOTE_LENGTH = Sequel.function(:char_length, :message)
 
+    # rubocop:disable all
     def self.quotes_for(query)
       qs = quotes(query)
-      return [] if qs.count == 0
-      qs.all
+      logs = ChanLog.filter(message: /\y#{query}\y/i)
+        .filter { QUOTE_LENGTH > 20 }
+      return [] if qs.count + logs.count == 0
+      [qs, logs].map do |ds|
+        ds.filter(Sequel.~(message: /^!q/)).order(Sequel.function(:random)).all rescue []
+      end.flatten.sort { |a,b| rand <=> rand }
     end
 
     def self.quotes(query)
@@ -21,7 +26,7 @@ module BougyBot
       return [] unless found
       ds = found.chan_logs_dataset.filter {  QUOTE_LENGTH > 20 }
       ds = ds.filter(message: /#{query.join(" ")}/i) if query.size > 0
-      ds.order(Sequel.function(:random))
+      ds
     end
 
     def self.quote(query)

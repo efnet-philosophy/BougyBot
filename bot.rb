@@ -11,7 +11,15 @@ BougyBot::M 'url'
 BougyBot::M 'quote'
 BougyBot::L 'cinch'
 
-if $0 == __FILE__
+def phillip(h = {})
+  channels = h[:channels] || %w(#linuxgeneration #pho #philosophy #subgenii #dfw #philrobot)
+  b = BougyBot::Cinch.new((h[:server] || 'irc.shaw.ca'), channels)
+  b.bot.loggers << ::Cinch::Logger::FormattedLogger.new(File.open('bot.log', 'w'))
+  b.bot.loggers = b.bot.loggers.last
+  b
+end
+
+if $PROGRAM_NAME == __FILE__
   require 'pry'
   BougyBot.pry
 end

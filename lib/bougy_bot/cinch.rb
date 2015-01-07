@@ -4,6 +4,8 @@ require_relative './plugins/functions'
 require_relative './plugins/autovoice'
 require_relative './plugins/title'
 require_relative './plugins/quote'
+require_relative './plugins/cleverbot.rb'
+require_relative './plugins/haiku.rb'
 # Bot Namespace
 module BougyBot
   # The Cinch part
@@ -19,12 +21,17 @@ module BougyBot
       @bot.configure do |c|
         c.server = @server
         c.channels = @channels
-        c.plugins.plugins = [BougyBot::Plugins::Functions,
+                             
+        c.plugins.plugins = [::Cinch::Plugins::Haiku,
+                             ::Cinch::Plugins::CleverBot,
+                             BougyBot::Plugins::Functions,
                              BougyBot::Plugins::Autovoice,
                              BougyBot::Plugins::Title,
                              BougyBot::Plugins::QuoteR]
-        c.nick = 'philrobot'
-        c.local_host = '2001:19f0:300:3182::deaf'
+        c.nick = BougyBot.options[:nick] || 'phillip'
+        c.user = 'phillip'
+        c.realname = 'phil'
+        c.local_host = '2001:19f0:300:26e5::efff'
       end
       @configured = true
     end

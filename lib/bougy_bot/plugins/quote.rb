@@ -11,6 +11,11 @@ module BougyBot
       @abuse = {}
       @all   = []
 
+      def self.unthrottle
+        @abuse = {}
+        @all = []
+      end
+
       # rubocop:disable Style/TrivialAccessors
       def self.abuse
         @abuse

@@ -2,7 +2,7 @@ module BougyBot
   module Plugins
     # Bot Functions
     class Functions
-      include Cinch::Plugin
+      include ::Cinch::Plugin
       match(/^\.chug ?(\d+)?$/, method: :chug, use_prefix: false)
       match(/^\.pouring ?(.+)?/, method: :pouring, use_prefix: false)
       match(/^\.done/, method: :done, use_prefix: false)
@@ -12,7 +12,7 @@ module BougyBot
       match(/^.drinkers/, method: :drinkers, use_prefix: false)
       match(/^.reset/, method: :reset, use_prefix: false)
 
-      def reset(m = nil)
+      def reset(_ = nil)
         @timer = nil
         @drinkers = nil
         @chugging = nil
@@ -20,7 +20,8 @@ module BougyBot
 
       def drinkers(m)
         return unless check_perms(m)
-        m.reply "Drinkers are #{@drinkers.map { |k,v| "%s (%s)" % [k,v] }.join(', ')}"
+        m.reply "Drinkers are #{@drinkers.map { |k, v| format('%s (%s)', k, v) }
+          .join(', ')}"
       end
 
       def op(m, target)
@@ -99,7 +100,7 @@ module BougyBot
       end
       private
       def check_perms(m)
-        return false unless m.channel.name.match(/#pho|#philrobot/)
+        return false unless m.channel.name.match(/#subgenii|#pho|#philrobot/)
         true
       end
     end

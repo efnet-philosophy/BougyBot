@@ -1,0 +1,3 @@
+[submodule "lib/bougy_bot/plugins/cleverbot"]
+	path = lib/bougy_bot/plugins/cleverbot
+	url = https://github.com/caitlin/cinch-cleverbot.git

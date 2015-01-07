@@ -34,7 +34,7 @@ module BougyBot
       author, *q = string.split
       au_ds = filter(author: /\y#{author}\y/i)
       au_ds = au_ds.filter(quote: /\y#{q.join(" ")}\y/i) if q.size > 0
-      au_ds.all
+      (au_ds.all + filter(author: /\y#{string}\y/i).all).compact
     end
 
     # return value must respond to #display
