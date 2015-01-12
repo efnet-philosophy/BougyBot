@@ -18,7 +18,7 @@ module BougyBot
 
     o "Sleep", :sleeps, ([10] * 100) + ([30] * 50) + ([60] * 25) + ([100] * 10) + ([500] * 5) + [1000]
     
-    o 'Always Talk To', :talk_to, ['howto']
+    o 'Always Talk To', :talk_to, ['howto', '(?-i:[A-Z\ ]{10,})']
 
     o 'Nick', :nick, 'pangaea'
   end

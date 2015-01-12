@@ -25,9 +25,11 @@ module Cinch
       end
 
       def should_answer?(m)
-        return false if m.message =~ /^!q/
-        return false if m.message =~ /^(#{bot.nick}|howto)/
-        return true if talk_to?(m.message, m.user.nick)
+        info "should_anser? #{m.message}"
+        message = m.message.sub(/ACTION(.*)/, '\1')
+        return false if message =~ /^!q/
+        return false if message =~ /^(#{bot.nick}|howto)/
+        return true if talk_to?(message, m.user.nick)
         chan = BougyBot::Channel.find(name: m.channel.name)
         tenmins = Time.now - (60 * 10)
         how_many = BougyBot::ChanLog.filter(channel_id: chan.id)

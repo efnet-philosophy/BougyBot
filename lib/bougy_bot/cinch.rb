@@ -18,6 +18,9 @@ module BougyBot
     end
 
     def configure
+      @quotes = (0..3).to_a.map do |_|
+        BougyBot::Quote.sample
+      end
       @bot.configure do |c|
         c.server = @server
         c.channels = @channels
@@ -28,10 +31,11 @@ module BougyBot
                              BougyBot::Plugins::Autovoice,
                              BougyBot::Plugins::Title,
                              BougyBot::Plugins::QuoteR]
-        c.nick = BougyBot.options[:nick] || 'phillip'
-        c.user = 'phillip'
-        c.realname = 'phil'
-        c.local_host = '2001:19f0:300:26e5::efff'
+        
+        c.nicks = [BougyBot.options[:nick], *@quotes.map { |q| q.author.split.last[0,9].downcase }].compact
+        c.user = @quotes.sample.author.split.first.downcase
+        c.realname = @quotes.sample.display
+        c.local_host = '2001:19f0:300:26e5:aaaa:bbbb:cccc:dddd'
       end
       @configured = true
     end
