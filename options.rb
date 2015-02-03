@@ -21,6 +21,8 @@ module BougyBot
     o 'Always Talk To', :talk_to, ['howto', '(?-i:[A-Z\ ]{10,})']
 
     o 'Nick', :nick, 'pangaea'
+    
+    o 'Hostname', :hostname, '2001:19f0:7000:8d44:babe:fee:faa:deed'
   end
 
 end
