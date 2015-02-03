@@ -12,7 +12,7 @@ BougyBot::M 'quote'
 BougyBot::L 'cinch'
 
 def phillip(h = {})
-  channels = h[:channels] || %w(#linuxgeneration #pho #philosophy #subgenii #dfw #philrobot)
+  channels = h[:channels] || BougyBot.options.channels
   b = BougyBot::Cinch.new((h[:server] || 'irc.shaw.ca'), channels)
   b.bot.loggers << ::Cinch::Logger::FormattedLogger.new(File.open('bot.log', 'w'))
   b.bot.loggers = b.bot.loggers.last

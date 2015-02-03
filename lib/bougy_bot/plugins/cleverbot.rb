@@ -18,7 +18,7 @@ module Cinch
         u ||= BougyBot::Mask.filter(Sequel.function(:split_part,
                                                     :mask,
                                                     '!',
-                                                    1) => nick).first.user
+                                                    1) => nick).first.user rescue nil
         BougyBot.t nick && Timer(300, shots: 1) { BougyBot.t nick } if u.nil?
         BougyBot.options[:talk_to]
           .detect { |n| nick =~ /#{n}/i || message =~ /#{n}/i }

@@ -61,6 +61,7 @@ module BougyBot
   end
 
 end
+BougyBot::R 'lib/core_ext/hash'
 BougyBot::R "options"
 BougyBot::Log = Logger.new(BougyBot.options.logfile, 10, 10240000) unless BougyBot.const_defined?("Log")
 BougyBot::Log.level = BougyBot.options.log_level
