@@ -1,4 +1,5 @@
 require 'cinch'
+require 'htmlentities'
 
 module Cinch
   # Plugin Space
@@ -14,12 +15,16 @@ module Cinch
       listen_to :channel
 
       def talk_to?(message, nick)
+        return false if nick =~ /^usefully/
         u = BougyBot::User[nick: nick]
         u ||= BougyBot::Mask.filter(Sequel.function(:split_part,
                                                     :mask,
                                                     '!',
                                                     1) => nick).first.user rescue nil
-        BougyBot.t nick && Timer(300, shots: 1) { BougyBot.t nick } if u.nil?
+        if u.nil?
+          BougyBot.t nick
+          Timer(300, shots: 1) { BougyBot.t nick }
+        end
         BougyBot.options[:talk_to]
           .detect { |n| nick =~ /#{n}/i || message =~ /#{n}/i }
       end
@@ -27,7 +32,8 @@ module Cinch
       def should_answer?(m)
         info "should_anser? #{m.message}"
         message = m.message.sub(/ACTION(.*)/, '\1')
-        return false if message =~ /^!q/
+        return false if message =~ /^!/
+        return false if message =~ /^\./
         return false if message =~ /^(#{bot.nick}|howto)/
         return true if talk_to?(message, m.user.nick)
         chan = BougyBot::Channel.find(name: m.channel.name)
@@ -54,7 +60,7 @@ module Cinch
       end
 
       def deezify(s)
-        s.gsub(/\bthese\b/, 'deez')
+        @entities.decode s.gsub(/\bthese\b/, 'deez')
       end
 
       def listen(m)
@@ -73,15 +79,17 @@ module Cinch
           warn "Clever response from clever: #{cbot_reply}"
           cbot_reply = BougyBot::Quote.best.display
         end
-        Timer(rand(5), shots: 1) { m.reply(format('%s: %s', m.user.nick, deezify(cbot_reply))) }
+        Timer(rand(10), shots: 1) { m.reply(format('%s: %s', m.user.nick, deezify(cbot_reply))) }
       end
 
       def initialize(*args)
         super
         @cleverbot = Cleverbot::Client.new
+        @entities  = HTMLEntities.new
       end
 
       def execute(m, message)
+        return if m.user.nick =~ /^usefully/
         msg_back = if @backoff
                      BougyBot::Quote.best.display
                    else

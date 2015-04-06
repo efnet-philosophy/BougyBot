@@ -34,7 +34,7 @@ module BougyBot
       def listen(m)
         nick = m.user.nick
         return if nick == bot.nick
-        return if nick =~ /^(?:GitHub|xbps-builder$|void-packages$)/
+        return if nick =~ /^(?:pangaea|GitHub|xbps-builder$|void-packages$)/
         log = do_log m
         return if abuser? nick
         return if Url.abuser? nick

@@ -5,7 +5,7 @@ require 'rest-client'
 module BougyBot
   Url = Class.new Sequel::Model
   # Class to hold seen urls
-  class Url
+  class Url # rubocop:disable Metrics/ClassLength
     set_dataset :urls
     TINYURL_EXPIRE = 86_400 * 7 # 7 days
     TLIMIT = 256
@@ -117,13 +117,42 @@ module BougyBot
       fetch_title(false)
     end
 
-    def shorten_url
+    def shorten_url # rubocop:disable Metrics/MethodLength
       return original unless original.size > 30
-      eurl = URI.escape(original)
-      tiny_url = open("http://tinyurl.com/api-create.php?url=#{eurl}").read
-      tiny_url =~ /Error/ ? original : tiny_url
+      if BougyBot.options.google[:url_api_key]
+        begin
+          google_shortened_url
+        rescue
+          tinyurl_shortened_url
+        end
+      else
+        tinyurl_shortened_url
+      end
     rescue
-      url
+      original
+    end
+
+    private
+
+    def tinyurl_shortened_url; self.class.tinyurl_shortened_url(original); end
+    def google_shortened_url; self.class.google_shortened_url(original); end
+
+    public
+
+    def self.tinyurl_shortened_url(url)
+      eurl = URI.escape(url)
+      tiny_url = open("http://tinyurl.com/api-create.php?url=#{eurl}").read
+      tiny_url =~ /Error/ ? url : tiny_url
+    end
+
+    def self.google_shortened_url(url)
+      u = format('https://www.googleapis.com/urlshortener/v1/url?key=%s',
+                 BougyBot.options.google[:url_api_key])
+      resp = RestClient.post(u,
+                             { longUrl: url }.to_json,
+                             content_type: :json)
+      props = JSON.parse resp
+      props.key?('id') ? props['id'] : url
     end
   end
 end

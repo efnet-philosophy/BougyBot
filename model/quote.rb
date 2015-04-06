@@ -2,6 +2,9 @@ require 'open-uri'
 require 'nokogiri'
 # Bot namespace
 module BougyBot
+  def self.uncommand(s)
+    s.sub(/^([!\.])/, '> \1')
+  end
   # A string that send itself to #display
   class Dstring
     attr_reader :display
@@ -64,7 +67,7 @@ module BougyBot
     end
 
     def display
-      format('%s -- %s', quote, author)
+      format('%s -- %s', BougyBot.uncommand(quote), author)
     end
   end
 

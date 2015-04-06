@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'htmlentities'
 gem 'pry'
 gem 'innate'
 gem 'cinch'

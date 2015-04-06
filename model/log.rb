@@ -18,7 +18,7 @@ module BougyBot
     end
 
     def display
-      format('%s -- %s', message, nick)
+      format('%s -- %s', BougyBot.uncommand(message), nick)
     end
   end
 end

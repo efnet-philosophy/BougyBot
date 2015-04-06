@@ -1,42 +1,50 @@
 require_relative '../bougy_bot'
 require 'cinch'
-require_relative './plugins/functions'
-require_relative './plugins/autovoice'
-require_relative './plugins/title'
-require_relative './plugins/quote'
-require_relative './plugins/cleverbot.rb'
-require_relative './plugins/haiku.rb'
-require "cinch-weatherman"
-require "cinch-convert"
-require "cinch-calculate"
-require "cinch/plugins/news"
-require "cinch/plugins/evalso"
-require "cinch-karma"
-require "cinch-urbandict"
-require "cinch-dicebag"
-require "cinch/plugins/fortune"
-require "cinch/plugins/wikipedia"
+if BougyBot.options.clever
+  require_relative './plugins/cleverbot.rb'
+  require 'cinch/plugins/news'
+  require 'cinch/plugins/evalso'
+  require 'cinch-karma'
+  require 'cinch-urbandict'
+  require 'cinch-dicebag'
+  require 'cinch/plugins/fortune'
+  require 'cinch/plugins/wikipedia'
+  require_relative './plugins/haiku.rb'
+  require 'cinch-convert'
+  require 'cinch-calculate'
+end
+
+if BougyBot.options.useful
+  require_relative './plugins/functions'
+  require_relative './plugins/autovoice'
+  require_relative './plugins/topiclock'
+  require_relative './plugins/title'
+  require_relative './plugins/quote'
+  require 'cinch-weatherman'
+end
 
 require 'open-uri'
 require 'nokogiri'
 require 'cgi'
-class Google
+# Super simple google search TODO: Replace, Idjit
+class Google # {{{
   include Cinch::Plugin
-  match /google (.+)/
+  match(/google (.+)/)
   def search(query)
     url = "http://www.google.com/search?q=#{CGI.escape(query)}"
-    res = Nokogiri::HTML(open(url)).at("h3.r")
+    res = Nokogiri::HTML(open(url)).at('h3.r')
     title = res.text
     link = res.at('a')[:href]
-    desc = res.at("./following::div").children.first.text
+    desc = res.at('./following::div').children.first.text
     CGI.unescape_html "#{title} - #{desc} (#{link})"
   rescue
-    "No results found"
+    'No results found'
   end
+
   def execute(m, query)
     m.reply(search(query))
   end
-end
+end # }}}
 
 # Bot Namespace
 module BougyBot
@@ -49,32 +57,44 @@ module BougyBot
       @channels = channels || ['#pho', '#philrobot']
     end
 
+    def plugins # rubocop:disable Metrics/MethodLength
+      return @plugins if @plugins
+      @plugins = []
+      if BougyBot.options.clever
+        @plugins += [::Cinch::Plugins::Haiku,
+                     ::Cinch::Plugins::CleverBot,
+                     ::Cinch::Plugins::News,
+                     ::Cinch::Plugins::EvalSo,
+                     ::Cinch::Plugins::Karma,
+                     ::Cinch::Plugins::UrbanDict,
+                     ::Cinch::Plugins::Calculate,
+                     ::Cinch::Plugins::Wikipedia,
+                     ::Cinch::Plugins::Dicebag,
+                     ::Cinch::Plugins::Convert,
+                     ::Google,
+                     ::Cinch::Plugins::Fortune]
+      end
+
+      if BougyBot.options.useful
+        @plugins += [BougyBot::Plugins::Functions,
+                     BougyBot::Plugins::Topiclock,
+                     BougyBot::Plugins::Autovoice,
+                     BougyBot::Plugins::Title,
+                     ::Cinch::Plugins::Weatherman,
+                     BougyBot::Plugins::QuoteR]
+      end
+      @plugins
+    end
+
     def configure
       @quotes = (0..3).to_a.map do |_|
         BougyBot::Quote.sample
       end
+      @plugs = plugins
       @bot.configure do |c|
         c.server = @server
         c.channels = @channels
-                             
-        c.plugins.plugins = [::Cinch::Plugins::Haiku,
-                             ::Cinch::Plugins::CleverBot,
-                             ::Cinch::Plugins::Convert,
-                             ::Cinch::Plugins::Calculate,
-                             ::Cinch::Plugins::Karma,
-                             ::Cinch::Plugins::UrbanDict,
-                             ::Cinch::Plugins::EvalSo,
-                             ::Cinch::Plugins::News,
-                             ::Cinch::Plugins::Wikipedia,
-                             ::Cinch::Plugins::Dicebag,
-                             ::Cinch::Plugins::Fortune,
-                             ::Cinch::Plugins::Weatherman,
-                             ::Google,
-                             BougyBot::Plugins::Functions,
-                             BougyBot::Plugins::Autovoice,
-                             BougyBot::Plugins::Title,
-                             BougyBot::Plugins::QuoteR]
-        
+        c.plugins.plugins = @plugs
         c.nicks = [BougyBot.options[:nick], *@quotes.map { |q| q.author.split.last[0,9].downcase }].compact
         c.user = @quotes.sample.author.split.first.downcase
         c.realname = @quotes.sample.display

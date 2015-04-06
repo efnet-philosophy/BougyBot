@@ -1,4 +1,7 @@
+require 'open-uri'
 module BougyBot
+  L 'second_date'
+  M 'url'
   module Plugins
     # Bot Functions
     class Functions
@@ -11,6 +14,20 @@ module BougyBot
       match(/^.op (.+)/, method: :op, use_prefix: false)
       match(/^.drinkers/, method: :drinkers, use_prefix: false)
       match(/^.reset/, method: :reset, use_prefix: false)
+      match(/^.second_date(.+)?/, method: :second_date, use_prefix: false)
+
+      def second_date(m, target = nil)
+        ans = BougyBot::SecondDate.best(target)
+        return m.reply 'No Dice' unless ans
+        m.reply format('%s - %s',
+                       (ans.summary rescue ans.description),
+                       Url.google_shortened_url(ans.link))
+      rescue => e
+        warn 'Second Date Fail'
+        warn "#{e}"
+        warn e.backtrace.join('\n\t')
+        m.reply 'No Dice'
+      end
 
       def reset(_ = nil)
         @timer = nil
