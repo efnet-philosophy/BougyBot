@@ -10,15 +10,15 @@ task :authors do
     # Examples of mappping, replace with your own or comment this out/delete it
     case name
     when /^(?:bougyman$|TJ Vanderpoel)/
-      name, email = "TJ Vanderpoel", "tj@rubyists.com"
+      name, email = 'TJ Vanderpoel', 'tj@rubyists.com'
     when /^(?:manveru$|Michael Fellinger)/
-      name, email = "Michael Fellinger", "mf@rubyists.com"
+      name, email = 'Michael Fellinger', 'mf@rubyists.com'
     when /^(?:deathsyn$|Kevin Berry)/
-      name, email = "Kevin Berry", "kb@rubyists.com"
+      name, email = 'Kevin Berry', 'kb@rubyists.com'
     when /^(?:(?:jayson|thedonvaughn|jvaughn)$|Jayson Vaughn)/
-      name, email = "Jayson Vaughn", "jv@rubyists.com"
+      name, email = 'Jayson Vaughn', 'jv@rubyists.com'
     when /^(?:rubyists@rubyists.com)/
-      name, email = "The Rubyists, LLC", "rubyists@rubyists.com"
+      name, email = 'The Rubyists, LLC', 'rubyists@rubyists.com'
     end
 
     authors[[name, email]] += count.to_i
@@ -28,8 +28,8 @@ task :authors do
     io.puts "Following persons have contributed to #{GEMSPEC.name}."
     io.puts '(Sorted by number of submitted patches, then alphabetically)'
     io.puts ''
-    authors.sort_by{|(n,e),c| [-c, n.downcase] }.each do |(name, email), count|
-      io.puts("%6d %s <%s>" % [count, name, email])
+    authors.sort_by { |(n, _e), c| [-c, n.downcase] }.each do |(name, email), count|
+      io.puts('%6d %s <%s>' % [count, name, email])
     end
   end
 end

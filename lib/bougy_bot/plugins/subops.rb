@@ -45,7 +45,8 @@ module BougyBot
 
       # TODO: Fill this out with more logic
       def allowed_to_kick(m, target) # rubocop:disable all
-        requestor = m.channel.users[m.user]
+        kicker = m.user
+        requestor = m.channel.users[kicker]
         unless requestor
           m.reply "No Requestor Found, wtf, #{m.user}?" if @chatty
           return false
@@ -60,18 +61,33 @@ module BougyBot
           return false
         end
         if kickee.last.include? 'v'
-          m.reply "#{m.user}: #{requestor} Can't kick another subop: #{kickee.first}" if @chatty # rubocop:disable Metrics/LineLength
-          return false
+          m.reply "#{kicker.nick}: Battle initiated with #{target}" if @chatty # rubocop:disable Metrics/LineLength
+          return voice_versus_voice(m.channel, kicker, kickee)
         end unless requestor.include?('o')
         if kickee.last.include? 'o'
           m.reply "#{m.user}: #{requestor} Can't kick an op: #{kickee.first}" if @chatty
+          m.channel.kick "#{kicker.nick}", "Lost battle to #{target}'s impenetrable '@' defense"
           return false
         end
         true
       end
 
+      def voice_versus_voice(channel, kicker, kickee)
+        if kickee.last.include? 'o'
+          channel.kick "#{kicker.nick}", "Lost battle to #{kickee.first.nick}'s impenetrable '@' defense"
+          return false
+        end
+        # TODO: write some better battle logic
+        kicker_points = rand(64)
+        kickee_points = rand(64)
+        return  true if kicker_points > kickee_points
+        channel.kick "#{kicker.nick}",
+                     "Lost battle to #{kickee.first.nick}'s strong defense: #{kickee_points} > #{kicker_points}"
+        false
+      end
+
       def nick_to_user(channel, nick)
-        channel.users.detect { |(k, _v)| k.nick == nick }
+        channel.users.detect { |(k, _v)| k.nick =~ /#{nick}/i }
       end
     end
   end

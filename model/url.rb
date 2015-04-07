@@ -134,8 +134,13 @@ module BougyBot
 
     private
 
-    def tinyurl_shortened_url; self.class.tinyurl_shortened_url(original); end
-    def google_shortened_url; self.class.google_shortened_url(original); end
+    def tinyurl_shortened_url
+      self.class.tinyurl_shortened_url(original)
+    end
+
+    def google_shortened_url
+      self.class.google_shortened_url(original)
+    end
 
     public
 

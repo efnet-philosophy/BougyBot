@@ -39,7 +39,7 @@ module Cinch
         chan = BougyBot::Channel.find(name: m.channel.name)
         tenmins = Time.now - (60 * 10)
         how_many = BougyBot::ChanLog.filter(channel_id: chan.id)
-                                    .filter { at  > tenmins }.count
+                   .filter { at  > tenmins }.count
         r = rand(1000)
         r < case how_many
             when 1..10
@@ -103,7 +103,6 @@ module Cinch
         end
         Timer(rand(5), shots: 1) { m.reply(deezify(msg_back), true) }
       end
-
     end
   end
 end

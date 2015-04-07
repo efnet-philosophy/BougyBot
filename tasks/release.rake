@@ -1,8 +1,8 @@
 namespace :release do
-  task :all => [:release_github, :release_rubyforge]
+  task all: [:release_github, :release_rubyforge]
 
   desc 'Display instructions to release on github'
-  task :github => [:reversion, :gemspec] do
+  task github: [:reversion, :gemspec] do
     name, version = GEMSPEC.name, GEMSPEC.version
 
     puts <<INSTRUCTIONS
@@ -17,12 +17,11 @@ git tag -a -m '#{version}' '#{version}'
 git push
 
 INSTRUCTIONS
-
   end
 
   # TODO: Not tested
   desc 'Display instructions to release on rubyforge'
-  task :rubyforge => [:reversion, :gemspec, :package] do
+  task rubyforge: [:reversion, :gemspec, :package] do
     name, version = GEMSPEC.name, GEMSPEC.version.to_s
 
     puts <<INSTRUCTIONS
@@ -41,10 +40,10 @@ INSTRUCTIONS
   desc 'Display instructions to add archives after release:rubyforge'
   task :rubyforge_archives do
     name, version = GEMSPEC.name, GEMSPEC.version.to_s
-    puts "Adding archives for distro packagers is:", ""
+    puts 'Adding archives for distro packagers is:', ''
 
     Dir["pkg/#{name}-#{version}.{tgz,zip}"].each do |file|
-      puts "rubyforge add_file %s %s %p %p" % [name, name, version, file]
+      puts 'rubyforge add_file %s %s %p %p' % [name, name, version, file]
     end
 
     puts

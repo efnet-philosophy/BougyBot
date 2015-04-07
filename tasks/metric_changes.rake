@@ -2,7 +2,7 @@ namespace :metric do
   desc 'committed changes per file according to git'
   task 'changes' do
     $stdout.sync = true
-    out = lambda{|changes, rb| puts("%4d %s" % [changes, rb]) }
+    out = lambda { |changes, rb| puts('%4d %s' % [changes, rb]) }
     changes = {}
 
     print 'counting changes '
@@ -15,10 +15,10 @@ namespace :metric do
     end
     puts ' done.'
 
-    sorted = changes.sort_by{|r,c| c }.reverse
-    puts "Top 20:"
-    sorted.first(20).each{|(r,c)| out[c,r] }
-    puts "Bottom 20:"
-    sorted.last(20).each{|(r,c)| out[c,r] }
+    sorted = changes.sort_by { |_r, c| c }.reverse
+    puts 'Top 20:'
+    sorted.first(20).each { |(r, c)| out[c, r] }
+    puts 'Bottom 20:'
+    sorted.last(20).each { |(r, c)| out[c, r] }
   end
 end

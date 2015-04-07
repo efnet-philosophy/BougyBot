@@ -1,4 +1,4 @@
-desc "show a todolist from all the TODO tags in the source"
+desc 'show a todolist from all the TODO tags in the source'
 task :todo do
   Dir.glob('{lib,spec}/**/*.rb') do |file|
     lastline = todo = comment = long_comment = false
@@ -8,11 +8,11 @@ task :todo do
       comment = line =~ /^\s*?#.*?$/
       long_comment = line =~ /^=begin/
       long_comment = line =~ /^=end/
-      todo = true if line =~ /TODO|FIXME|THINK/ and (long_comment or comment)
+      todo = true if line =~ /TODO|FIXME|THINK/ && (long_comment || comment)
       todo = false if line.gsub('#', '').strip.empty?
-      todo = false unless comment or long_comment
+      todo = false unless comment || long_comment
       if todo
-        unless lastline and lastline + 1 == lineno
+        unless lastline && lastline + 1 == lineno
           puts
           puts "vim #{file} +#{lineno}"
         end

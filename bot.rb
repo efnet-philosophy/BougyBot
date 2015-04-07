@@ -28,7 +28,6 @@ def useful(h = {})
   b
 end
 
-
 if $PROGRAM_NAME == __FILE__
   require 'pry'
   BougyBot.pry

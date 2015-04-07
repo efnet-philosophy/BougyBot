@@ -13,11 +13,11 @@ end
 # This sets all the globals and creates our main namespace
 module BougyBot
   LIBROOT = Pathname(__FILE__).dirname.expand_path
-  ROOT = LIBROOT/".."
-  MIGRATION_ROOT = ROOT/:migrations
-  MODEL_ROOT = ROOT/:model
-  SPEC_HELPER_PATH = ROOT/:spec
-  autoload :VERSION, (LIBROOT/"bougy_bot/version").to_s
+  ROOT = LIBROOT / '..'
+  MIGRATION_ROOT = ROOT / :migrations
+  MODEL_ROOT = ROOT / :model
+  SPEC_HELPER_PATH = ROOT / :spec
+  autoload :VERSION, (LIBROOT / 'bougy_bot/version').to_s
   # Helper method to load models
   # @model String The model you wish to load
   def self.M(model)
@@ -33,7 +33,7 @@ module BougyBot
   # Helper method to load files from lib/yrb
   # @file String The file you wish to load
   def self.L(file)
-    require (BougyBot::LIBROOT/:bougy_bot).join(file).to_s
+    require (BougyBot::LIBROOT / :bougy_bot).join(file).to_s
   end
 
   def self.t(things)
@@ -46,7 +46,7 @@ module BougyBot
   end
 
   def self.Run(*args)
-    require "open3"
+    require 'open3'
     Open3.popen3(*args) do |sin, sout, serr|
       o = Thread.new do
         sout.each_line { |l| puts l.chomp }
@@ -59,10 +59,8 @@ module BougyBot
       e.join
     end
   end
-
 end
 BougyBot::R 'lib/core_ext/hash'
-BougyBot::R "options"
-BougyBot::Log = Logger.new(BougyBot.options.logfile, 10, 10240000) unless BougyBot.const_defined?("Log")
+BougyBot::R 'options'
+BougyBot::Log = Logger.new(BougyBot.options.logfile, 10, 10_240_000) unless BougyBot.const_defined?('Log')
 BougyBot::Log.level = BougyBot.options.log_level
-
