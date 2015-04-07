@@ -18,6 +18,7 @@ if BougyBot.options.useful
   require_relative './plugins/functions'
   require_relative './plugins/autovoice'
   require_relative './plugins/topiclock'
+  require_relative './plugins/subops'
   require_relative './plugins/title'
   require_relative './plugins/quote'
   require 'cinch-weatherman'
@@ -79,6 +80,7 @@ module BougyBot
         @plugins += [BougyBot::Plugins::Functions,
                      BougyBot::Plugins::Topiclock,
                      BougyBot::Plugins::Autovoice,
+                     BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
                      ::Cinch::Plugins::Weatherman,
                      BougyBot::Plugins::QuoteR]

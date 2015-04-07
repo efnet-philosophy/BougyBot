@@ -9,8 +9,7 @@ module BougyBot
       listen_to :topic
 
       def listen(m)
-        require 'pry'
-        binding.pry
+        return unless m.command == 'TOPIC'
         m.channel.mode '+t'
         Timer(120) { m.channel.mode '-t' }
       end
