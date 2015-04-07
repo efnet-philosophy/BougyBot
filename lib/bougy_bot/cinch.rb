@@ -94,6 +94,7 @@ module BougyBot
       end
       @plugs = plugins
       @bot.configure do |c|
+        c.shared[:cooldown] = { :config => { '#philosophy' => { :global => 10, :user => 20 } } }
         c.server = @server
         c.channels = @channels
         c.plugins.plugins = @plugs
