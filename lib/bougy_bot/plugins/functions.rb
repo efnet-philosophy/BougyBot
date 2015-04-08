@@ -1,4 +1,5 @@
 require 'open-uri'
+require 'cinch/cooldown'
 module BougyBot
   L 'second_date'
   M 'url'
@@ -6,6 +7,7 @@ module BougyBot
     # Bot Functions
     class Functions
       include ::Cinch::Plugin
+      enforce_cooldown
       match(/^\.chug ?(\d+)?$/, method: :chug, use_prefix: false)
       match(/^\.pouring ?(.+)?/, method: :pouring, use_prefix: false)
       match(/^\.done/, method: :done, use_prefix: false)
