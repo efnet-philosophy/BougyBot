@@ -1,16 +1,16 @@
-==Tj Vanderpoel
-----------
+BougyBot
+--------
 
   simple irc bot
 
-== Requirements
+## Requirements
 
 * `rvm`: from rvm.git.io
 * PostgreSQL: for the database. Other databases supported by the ruby Sequel library may work, only tested with PostgreSQL.
   
 
-==Usage
--------
+Usage
+-----
 clone this tree
 
 ```
