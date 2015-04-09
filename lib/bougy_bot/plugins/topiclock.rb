@@ -6,12 +6,30 @@ module BougyBot
     # The topiclock functions
     class Topiclock
       include ::Cinch::Plugin
+      match(/tlock (on|off)$/)
       listen_to :topic
 
+      def initialize(*args)
+        super
+        @tlock = true
+        @topic = false
+      end
+
+      def execute(m, option)
+        return unless m.user.nick.match(/bougyman|Death_Syn/)
+        @tlock = option == 'on'
+        m.reply "Topic Unlocking is now #{@tlock ? 'enabled' : 'disabled'}"
+      end
+
       def listen(m)
+        return if @topic
         return unless m.command == 'TOPIC'
+        @topic = true
         m.channel.mode '+t'
-        Timer(120) { m.channel.mode '-t' }
+        Timer(120) do
+          m.channel.mode '-t'
+          @topic = false
+        end
       end
     end
   end
