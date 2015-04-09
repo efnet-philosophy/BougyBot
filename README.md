@@ -87,6 +87,6 @@ from /home/bougyman/.rvm/gems/ruby-2.2.0@bougy_bot/gems/cinch-2.1.0/lib/cinch/ir
 
 #### Explore
 
-Cinch plugin code is super easy to wrote. See examples in lib/bougy_bot/plugins/
+Cinch plugin code is super easy to understand and write. See examples in lib/bougy_bot/plugins/
 
 Copyright(c) 2015 by bougyman
