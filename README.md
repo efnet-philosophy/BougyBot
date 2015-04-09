@@ -35,7 +35,7 @@ Copy one of the config/ files to a name of your choosing.
 cp config/everything.json config/wonderbot.json
 ```
 
-Edit config/everything.json. Take a look at options.rb for what can be set.
+Edit config/wonderbot.json. Take a look at options.rb for what can be set (servers to connect to, etc).
 
 #### Database
 Create the database user (botuser) and database (botdb)
