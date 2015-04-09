@@ -54,9 +54,13 @@ Create the initial table structure
 % BougyBot_ENV=wonderbot ruby ./bot.rb
 ```
 You are now in an interactive ruby shell, you should make sure you are in a detachable terminal (tmux or GNUScreen)
+We must create one Quote before the bot will start.
 ```
-[1] pry(BougyBot)> (wonder = clever).start
+[1] pry(BougyBot)> Quote.create quote: 'Boo', author: 'bougyman'
+=> #<BougyBot::Quote @values={:id=>420309, :quote=>"Boo", :author=>"bougyman", :tags=>nil, :at=>2015-04-09 15:13:55 +0000, :last=>2015-04-09 15:13:55 +0000}>
+[2] pry(BougyBot)> (wonder = clever).start
 ```
+Make the quote whatever you like by whoever you like, of course.
 This will seemingly do nothing. Not to worry, it is now running. Go to another tmux/screen window and follow the output of ./clever.log to see
 
 ```
