@@ -53,7 +53,7 @@ Create the initial table structure
 ```
 % BougyBot_ENV=wonderbot ruby ./bot.rb
 ```
-You are not in an interactive ruby shell, you should make sure you are in a detachable terminal (tmux or GNUScreen)
+You are now in an interactive ruby shell, you should make sure you are in a detachable terminal (tmux or GNUScreen)
 ```
 [1] pry(BougyBot)> (wonder = clever).start
 ```
