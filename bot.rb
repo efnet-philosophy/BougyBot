@@ -14,7 +14,7 @@ BougyBot::L 'cinch'
 def clever(h = {})
   BougyBot.options.nick = nil
   channels = h[:channels] || BougyBot.options.channels
-  b = BougyBot::Cinch.new((h[:server] || 'irc.shaw.ca'), channels)
+  b = BougyBot::Cinch.new((h[:server] || BougyBot.options.server), channels)
   b.bot.loggers << ::Cinch::Logger::FormattedLogger.new(File.open('clever.log', 'w'))
   b.bot.loggers = b.bot.loggers.last
   b
@@ -22,7 +22,7 @@ end
 
 def useful(h = {})
   channels = h[:channels] || BougyBot.options.channels
-  b = BougyBot::Cinch.new((h[:server] || 'irc.shaw.ca'), channels)
+  b = BougyBot::Cinch.new((h[:server] || BougyBot.options.server), channels)
   b.bot.loggers << ::Cinch::Logger::FormattedLogger.new(File.open('useful.log', 'w'))
   b.bot.loggers = b.bot.loggers.last
   b

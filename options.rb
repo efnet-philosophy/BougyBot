@@ -6,6 +6,7 @@ module BougyBot
                        log_level: Logger::INFO,
                        env: 'development',
                        channels: [],
+                       server: 'irc.shaw.ca',
                        google: { url_api_key: nil },
                        logfile: $stdout }
 
@@ -38,6 +39,8 @@ module BougyBot
     o 'Environment', :env, ENV['BougyBot_ENV'] || 'development'
 
     o 'Database', :db, BougyBot.options.db || ENV['BougyBot_DB'] || loaded_options[:db]
+
+    o 'Server', :server, BougyBot.options.server || ENV['BougyBot_SERVER'] || loaded_options[:server]
 
     o 'Logfile', :logfile, BougyBot.options.logfile || ENV['BougyBot_LOG'] || loaded_options[:logfile] || $stdout
 
