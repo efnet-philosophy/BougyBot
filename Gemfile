@@ -10,7 +10,7 @@ gem 'sequel'
 gem 'pg'
 gem 'pg_array'
 gem 'sequel_postgresql_triggers'
-gem 'cleverbot'
+gem 'cleverbot', git: "https://github.com/rubyists/cleverbot"
 gem 'cinch-cooldown'
 gem 'cinch-weatherman'
 gem 'cinch-convert'
