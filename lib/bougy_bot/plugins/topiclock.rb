@@ -26,7 +26,7 @@ module BougyBot
         return unless m.command == 'TOPIC'
         @topic = true
         m.channel.mode '+t'
-        Timer(120) do
+        Timer(120, shots: 1) do
           m.channel.mode '-t'
           @topic = false
         end

@@ -15,7 +15,7 @@ module BougyBot
 
       def initialize(*args)
         super
-        @autovoice = 'on'
+        @autovoice = false
       end
 
       def listen(m)
