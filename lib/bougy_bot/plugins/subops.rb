@@ -24,9 +24,9 @@ module BougyBot
       enforce_cooldown
       match(/subops (on|off)$/)
       match(/subops_chatty (on|off)$/, method: :chatty)
-      match(/(?:kick|battle) (.*)/, method: :kick, group: :subops)
-      match(/ban[^\s]+ (.*)/, method: :ban, group: :subops)
-      match(/dance[^\s]+ (.*)/, method: :danceoff, group: :subops)
+      match(/(?:kick|battle)[^\s]* (.*)/, method: :kick, group: :subops)
+      match(/ban[^\s]* (.*)/, method: :ban, group: :subops)
+      match(/dance[^\s]* (.*)/, method: :danceoff, group: :subops)
 
       def initialize(*args)
         super
