@@ -8,7 +8,7 @@ module BougyBot
   # Plugin Namespace
   module Plugins
     # The subop functions
-    class Subops
+    class Subops # rubocop:disable all
       DANCES = [
         'wicked break dance',
         'Rumba',
@@ -25,6 +25,7 @@ module BougyBot
       match(/subops (on|off)$/)
       match(/subops_chatty (on|off)$/, method: :chatty)
       match(/(?:kick|battle) (.*)/, method: :kick, group: :subops)
+      match(/ban[^\s]+ (.*)/, method: :ban, group: :subops)
       match(/dance[^\s]+ (.*)/, method: :danceoff, group: :subops)
 
       def initialize(*args)
@@ -39,18 +40,43 @@ module BougyBot
         kicker = m.user
         kickee = nick_to_user(m.channel, target)
         return unless kickee
-        m.reply "#{kicker.nick} Challenges #{target} to a #Philosophy Dance Off" if @chatty
+        m.reply "#{kicker.nick} Challenges #{target} to a Dance Off" if @chatty
         Timer(5, shots: 1) do
-          result = voice_versus_voice(m.channel, kicker, kickee, 'Dance Off', DANCES.sample) 
-          m.channel.kick target, message if result
+          results = voice_versus_voice(m.channel, kicker, kickee, 'Dance Off', DANCES.sample)
+          if results
+            winmsg = "#{kicker.nick} prevails with '#{message}' of #{results.first} to #{target}'s #{results.last}"
+            m.channel.kick target, winmsg if result
+          end
+        end
+      end
+
+      def ban(m, msg)
+        return unless @subops
+        target, message = msg.split(/\s+/, 2)
+        res = allowed_to_kick(m, target)
+        return unless res
+        if res.respond_to? :last
+          message ||= "Kicked by #{m.user}'s request"
+          message << "No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})" if res.respond_to? :first
+          m.channel.kick target, message
+        else
+          message ||= "Banned by #{m.user}'s request"
+          banee = nick_to_user(m.channel, target)
+          ip = banee.first.mask.mask.split('@').last
+          nickban = format('%s!*@*', target)
+          m.channel.kick target, message
+          m.channel.ban nickban
+          m.channel.ban format('*!*@%s', ip)
         end
       end
 
       def kick(m, msg)
         return unless @subops
         target, message = msg.split(/\s+/, 2)
-        return unless allowed_to_kick(m, target)
+        res = allowed_to_kick(m, target)
+        return unless res
         message ||= "Kicked by #{m.user}'s request"
+        message << " (#{res.first} > #{res.last})" if res.respond_to? :first
         m.channel.kick target, message
       end
 
@@ -110,7 +136,7 @@ module BougyBot
                        "Lost #{ftype} to #{kickee.first.nick}'s strong #{fdefense}: #{kickee_points} > #{kicker_points}"
           return false
         end
-        true
+        [kicker_points, kickee_points]
       end
 
       def nick_to_user(channel, nick)
