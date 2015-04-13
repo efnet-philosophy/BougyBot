@@ -45,7 +45,7 @@ module BougyBot
           results = voice_versus_voice(m.channel, kicker, kickee, 'Dance Off', DANCES.sample)
           if results
             winmsg = "#{kicker.nick} prevails with '#{message}' of #{results.first} to #{target}'s #{results.last}"
-            m.channel.kick target, winmsg if result
+            m.channel.kick target, winmsg
           end
         end
       end
