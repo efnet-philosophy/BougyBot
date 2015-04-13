@@ -38,6 +38,7 @@ module BougyBot
         return unless @subops
         target, message = msg.split(/\s+/, 2)
         kicker = m.user
+        return if kicker.nick =~ /^#{target}$/i
         kickee = nick_to_user(m.channel, target)
         return unless kickee
         m.reply "#{kicker.nick} Challenges #{target} to a Dance Off" if @chatty
@@ -53,6 +54,7 @@ module BougyBot
       def ban(m, msg)
         return unless @subops
         target, message = msg.split(/\s+/, 2)
+        return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
         return unless res
         if res.respond_to? :last
@@ -73,6 +75,7 @@ module BougyBot
       def kick(m, msg)
         return unless @subops
         target, message = msg.split(/\s+/, 2)
+        return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
         return unless res
         message ||= "Kicked by #{m.user}'s request"
