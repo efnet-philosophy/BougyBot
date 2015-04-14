@@ -69,6 +69,10 @@ module BougyBot
           m.channel.kick target, message
           m.channel.ban nickban
           m.channel.ban format('*!*@%s', ip)
+          Timer(60*60*2, shots: 1) do
+            m.channel.unban nickban
+            m.channel.unban format('*!*@%s', ip)
+          end
         end
       end
 
