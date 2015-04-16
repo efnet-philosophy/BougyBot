@@ -1,5 +1,6 @@
 require 'cinch'
 require_relative '../../bougy_bot'
+require 'cinch/cooldown'
 BougyBot::M 'quote'
 
 # Bot Namespace
@@ -27,6 +28,7 @@ module BougyBot
       # rubocop:enable Style/TrivialAccessors
 
       include ::Cinch::Plugin
+      enforce_cooldown
       match(/q(?: ?(.*))?$/, method: :quote)
       match(/(?:countq)$/, method: :count)
 
