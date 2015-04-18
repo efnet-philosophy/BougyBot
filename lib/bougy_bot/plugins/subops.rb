@@ -18,7 +18,12 @@ module BougyBot
         'Jawdropping Modern Masterpiece',
         'Sultry Tango',
         'Swayze-Like Moves',
-        'Saturday Night Disco'
+        'Saturday Night Disco',
+        'Moves like Jagger',
+        'Wild Modern Jazz',
+        'Captivating Flamenco',
+        'Thrilling Cha-Cha',
+        'Foxy Foxtrot'
       ]
       include ::Cinch::Plugin
       enforce_cooldown
