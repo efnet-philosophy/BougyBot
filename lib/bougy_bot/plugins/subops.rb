@@ -29,6 +29,8 @@ module BougyBot
       enforce_cooldown
       match(/subops (on|off)$/)
       match(/subops_chatty (on|off)$/, method: :chatty)
+      match(/punish ([^\s]+)$/, method: :punish)
+      match(/unpunish ([^\s]+)$/, method: :unpunish)
       match(/(?:kick|battle)[^\s]* (.*)/, method: :kick, group: :subops)
       match(/ban[^\s]* (.*)/, method: :ban, group: :subops)
       match(/dance[^\s]* (.*)/, method: :danceoff, group: :subops)
@@ -36,11 +38,19 @@ module BougyBot
       def initialize(*args)
         super
         @subops = true
-        @chatty = true
+        @chatty = false
+        @protected = []
+        @punished  = [/bandini/]
+        @ignored = ['howto']
       end
 
       def danceoff(m, msg)
         return unless @subops
+        return if @ignored.include? m.user.nick
+        if @punished.detect { |p| p.match m.user.nick }
+          m.channel.kick m.user.nick, 'You have lost this privilege, please stop.'
+          return false
+        end
         target, message = msg.split(/\s+/, 2)
         kicker = m.user
         return if kicker.nick =~ /^#{target}$/i
@@ -56,16 +66,22 @@ module BougyBot
         end
       end
 
-      def ban(m, msg)
+      def ban(m, msg) # rubocop:disable all
         return unless @subops
+        return if @ignored.include? m.user.nick
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
         return unless res
         if res.respond_to? :last
-          message ||= "Kicked by #{m.user}'s request"
-          message << "No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})" if res.respond_to? :first
-          m.channel.kick target, message
+          message ||= "Kicking by #{m.user}'s request: "
+          if res.first > res.last
+            message << " No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})"
+            m.channel.kick target, message
+          else
+            message << " No banning of subops, #{m.user.nick}, you loser -> (#{res.last} > #{res.first})"
+            m.channel.kick m.user.nick, message
+          end
         else
           message ||= "Banned by #{m.user}'s request"
           banee = nick_to_user(m.channel, target)
@@ -74,7 +90,7 @@ module BougyBot
           m.channel.kick target, message
           m.channel.ban nickban
           m.channel.ban format('*!*@%s', ip)
-          Timer(60*60*2, shots: 1) do
+          Timer(60 * 60 * 2, shots: 1) do
             m.channel.unban nickban
             m.channel.unban format('*!*@%s', ip)
           end
@@ -83,6 +99,7 @@ module BougyBot
 
       def kick(m, msg)
         return unless @subops
+        return if @ignored.include? m.user.nick
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
@@ -93,9 +110,25 @@ module BougyBot
       end
 
       def chatty(m, option)
-        return unless m.user.nick.match(/bougyman|Death_Syn/)
+        return unless m.user.nick.match(/^(?:bougyman|Death_Syn)$/)
         @chatty = option == 'on'
         m.reply "Subops Verbosity is now #{@chatty ? 'enabled' : 'disabled'}"
+      end
+
+      def unpunish(m, option)
+        return unless m.user.nick.match(/^(?:TwoKnives|milkness|arkuat|bougyman|Death_Syn)$/)
+        if idx = @punished.find_index(/#{option}/)
+          @punished.delete(@punished[idx])
+          m.reply "Unpunished #{option}"
+        else
+          m.reply "#{option} is not punished"
+        end
+      end
+
+      def punish(m, option)
+        return unless m.user.nick.match(/^(?:TwoKnives|milkness|arkuat|bougyman|Death_Syn)$/)
+        @punished << /#{option}/
+        m.reply "Done"
       end
 
       def execute(m, option)
@@ -108,6 +141,15 @@ module BougyBot
 
       # TODO: Fill this out with more logic
       def allowed_to_kick(m, target) # rubocop:disable all
+        binding.pry if @chatty # rubocop:disable all
+        if @protected.include? target
+          m.channel.kick m.user.nick, "Cool down, #{m.user.nick}, you're trying some abuse, here."
+          return false
+        end
+        if @punished.detect { |p| p.match m.user.nick }
+          m.channel.kick m.user.nick, 'You have lost this privilege, please stop.'
+          return false
+        end
         kicker = m.user
         requestor = m.channel.users[kicker]
         unless requestor
@@ -120,7 +162,7 @@ module BougyBot
         end
         kickee = nick_to_user(m.channel, target)
         unless kickee
-          m.reply "#{target} is gone or chagned nicks" if @chatty
+          m.reply "#{target} is gone or changed nicks" if @chatty
           return false
         end
         if kickee.last.include? 'v'
@@ -132,11 +174,15 @@ module BougyBot
           m.channel.kick "#{kicker.nick}", "Lost battle to #{target}'s impenetrable '@' defense"
           return false
         end
+        @protected << target
+        Timer(30, shots: 1) { @protected.delete target }
         true
       end
 
       def voice_versus_voice(channel, kicker, kickee, ftype = 'battle', fdefense = 'defense')
         if kickee.last.include? 'o'
+          @protected << kickee.first.nick
+          Timer(30, shots: 1) { @protected.delete kickee.first.nick }
           channel.kick "#{kicker.nick}", "Lost #{ftype} to #{kickee.first.nick}'s impenetrable '@' #{fdefense}"
           return false
         end
@@ -144,15 +190,19 @@ module BougyBot
         kicker_points = rand(64)
         kickee_points = rand(64)
         if kickee_points > kicker_points
+          @protected << kicker.nick
+          Timer(30, shots: 1) { @protected.delete kicker.nick }
           channel.kick "#{kicker.nick}",
                        "Lost #{ftype} to #{kickee.first.nick}'s strong #{fdefense}: #{kickee_points} > #{kicker_points}"
           return false
         end
+        @protected << kickee.first.nick
+        Timer(30, shots: 1) { @protected.delete kickee.first.nick }
         [kicker_points, kickee_points]
       end
 
       def nick_to_user(channel, nick)
-        channel.users.detect { |(k, _v)| k.nick =~ /#{nick}/i }
+        channel.users.detect { |(k, _v)| k.nick =~ /#{Regexp.escape(nick)}/i }
       end
     end
   end

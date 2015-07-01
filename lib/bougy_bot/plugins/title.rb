@@ -48,7 +48,8 @@ module BougyBot
       def title_urls(m, channel_id)
         urls = URI.extract(m.message, %w(http https))
         urls.each do |u|
-          m.reply Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
+          rep = Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
+          m.reply rep
         end
       end
     end

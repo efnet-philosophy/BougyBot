@@ -48,14 +48,23 @@ module BougyBot
       @short_title = st.gsub(/\n/, ' ').strip
     end
 
+    def ignores
+      ['George']
+    end
+
     def display_for(nick)
+      return if ignores.include?(nick)
       if old?
-        format('%s: OLD! First shared by %s on %s. "%s" (%s)',
-               nick,
-               by == nick ? 'You' : by,
-               pretty_at,
-               short_title,
-               short)
+        if by == nick
+          "#{nick}: Fuck you, you shared this already on #{pretty_at} '#{short_title}' -> #{short}"
+        else
+          format('%s: OLD! First shared by %s on %s. "%s" (%s)',
+                 nick,
+                 by == nick ? 'You' : by,
+                 pretty_at,
+                 short_title,
+                 short)
+        end
       else
         format('%s: "%s" (%s)', nick, short_title, short)
       end
@@ -83,15 +92,7 @@ module BougyBot
     end
 
     def default_title
-      fname = File.basename(original)
-      case fname
-      when /(?:jpg|png|gif)$/
-        "Some Random Image named #{fname}"
-      when /(?:avi|mpg|wmv)$/
-        "Some Random Video named #{fname}"
-      else
-        "Untitled Randomness: #{fname}"
-      end
+      'Screw this untitled link'
     end
 
     # rubocop:disable Metrics/LineLength
