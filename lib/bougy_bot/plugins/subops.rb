@@ -26,6 +26,7 @@ module BougyBot
         'Foxy Foxtrot'
       ]
       include ::Cinch::Plugin
+      include Cinch::Extensions::Authentication
       enforce_cooldown
       match(/subops (on|off)$/)
       match(/subops_chatty (on|off)$/, method: :chatty)
@@ -34,6 +35,7 @@ module BougyBot
       match(/(?:kick|battle)[^\s]* (.*)/, method: :kick, group: :subops)
       match(/ban[^\s]* (.*)/, method: :ban, group: :subops)
       match(/dance[^\s]* (.*)/, method: :danceoff, group: :subops)
+      enable_authentication
 
       def initialize(*args)
         super
@@ -45,6 +47,7 @@ module BougyBot
       end
 
       def danceoff(m, msg)
+        return if authenticated? m, :enemies
         return unless @subops
         return if @ignored.include? m.user.nick
         if @punished.detect { |p| p.match m.user.nick }
@@ -67,7 +70,7 @@ module BougyBot
       end
 
       def ban(m, msg) # rubocop:disable all
-        return unless @subops
+        return unless authenticated?(m, [:subops, :admins])
         return if @ignored.include? m.user.nick
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
@@ -98,6 +101,7 @@ module BougyBot
       end
 
       def kick(m, msg)
+        return unless authenticated?(m, [:subops, :admins])
         return unless @subops
         return if @ignored.include? m.user.nick
         target, message = msg.split(/\s+/, 2)
@@ -110,13 +114,13 @@ module BougyBot
       end
 
       def chatty(m, option)
-        return unless m.user.nick.match(/^(?:bougyman|Death_Syn)$/)
+        return unless authenticated?(m, :admins)
         @chatty = option == 'on'
         m.reply "Subops Verbosity is now #{@chatty ? 'enabled' : 'disabled'}"
       end
 
       def unpunish(m, option)
-        return unless m.user.nick.match(/^(?:TwoKnives|milkness|arkuat|bougyman|Death_Syn)$/)
+        return unless authenticated?(m, :admins)
         if idx = @punished.find_index(/#{option}/)
           @punished.delete(@punished[idx])
           m.reply "Unpunished #{option}"
@@ -126,13 +130,13 @@ module BougyBot
       end
 
       def punish(m, option)
-        return unless m.user.nick.match(/^(?:TwoKnives|milkness|arkuat|bougyman|Death_Syn)$/)
+        return unless authenticated?(m, :admins)
         @punished << /#{option}/
-        m.reply "Done"
+        m.reply 'Done'
       end
 
       def execute(m, option)
-        return unless m.user.nick.match(/bougyman|Death_Syn/)
+        return unless authenticated?(m, :admins)
         @subops = option == 'on'
         m.reply "Subops is now #{@subops ? 'enabled' : 'disabled'}"
       end

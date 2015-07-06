@@ -1,5 +1,6 @@
 require_relative '../bougy_bot'
 require 'cinch'
+require 'cinch/extensions/authentication'
 if BougyBot.options.clever
   require_relative './plugins/cleverbot.rb'
   require 'cinch/plugins/news'
@@ -60,7 +61,7 @@ module BougyBot
 
     def plugins # rubocop:disable Metrics/MethodLength
       return @plugins if @plugins
-      @plugins = []
+      @plugins = [::Cinch::Plugins::UserLogin]
       if BougyBot.options.clever
         @plugins += [::Cinch::Plugins::Haiku,
                      ::Cinch::Plugins::CleverBot,
@@ -98,6 +99,19 @@ module BougyBot
         c.server = @server
         c.channels = @channels
         c.plugins.plugins = @plugs
+        c.authentication          = ::Cinch::Configuration::Authentication.new
+        c.authentication.strategy = :login # or :list / :login
+        c.authentication.level    = [:admins, :subops, :users, :enemies]
+        c.authentication.registration = lambda do |nick, pass|
+          BougyBot::User.register nick, pass
+        end
+        c.authentication.fetch_user = lambda do |nick|
+          BougyBot::User.find nick: nick, approved: true
+        end
+        c.authentication.admins =  lambda { |user| user.level.to_sym == :admin }
+        c.authentication.subops =  lambda { |user| user.level.to_sym == :subop }
+        c.authentication.users =   lambda { |user| user.level.to_sym == :user }
+        c.authentication.enemies = lambda { |user| user.level.to_sym == :enemy }
         c.nicks = [BougyBot.options[:nick], *@quotes.map { |q| q.author.split.last[0, 9].downcase }].compact
         c.user = @quotes.sample.author.split.first.downcase
         c.realname = @quotes.sample.display

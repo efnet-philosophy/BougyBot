@@ -1,3 +1,4 @@
+require 'bcrypt'
 # Bot Namespace
 module BougyBot
   User = Class.new Sequel::Model
@@ -8,6 +9,23 @@ module BougyBot
     one_to_many :masks
     one_to_many :chan_logs
     QUOTE_LENGTH = Sequel.function(:char_length, :message)
+
+    def self.register(nick, pass)
+      if found = find(nick: nick)
+        if found.password_hash.nil?
+          found.password = pass
+          found.approved = true
+          found.level    = :user
+          return found.save
+        end
+        warn "User #{nick} already exists"
+        false
+      else
+        new_user = new nick: nick, level: 'user', approved: true
+        new_user.password = pass
+        new_user.save
+      end
+    end
 
     # rubocop:disable all
     def self.quotes_for(query)
@@ -46,6 +64,19 @@ module BougyBot
     def after_create
       super
       Mask.create(mask: mask, user_id: self[:id])
+    end
+
+    def password
+      @password ||= BCrypt::Password.new(password_hash)
+    end
+
+    def password=(new_password)
+      @password = BCrypt::Password.create(new_password)
+      self.password_hash = @password
+    end
+
+    def authenticate(pass)
+      password == pass
     end
   end
 end
