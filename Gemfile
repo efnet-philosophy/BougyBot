@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 gem 'htmlentities'
 gem 'bcrypt'
+gem 'yt'
 gem 'pry'
 gem 'innate'
 gem 'cinch'

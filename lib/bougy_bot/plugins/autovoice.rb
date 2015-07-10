@@ -10,8 +10,12 @@ module BougyBot
     # The autovoice functions
     class Autovoice
       include ::Cinch::Plugin
+      include Cinch::Extensions::Authentication
+
       listen_to :join
       match(/autovoice (on|off)$/)
+      enable_authentication
+
 
       def initialize(*args)
         super
@@ -24,7 +28,7 @@ module BougyBot
       end
 
       def execute(m, option)
-        return unless m.user.nick.match(/bougyman|Death_Syn/)
+        return unless authenticated?(m, [:subops, :admins])
         @autovoice = option == 'on'
 
         m.reply "Autovoice is now #{@autovoice ? 'enabled' : 'disabled'}"

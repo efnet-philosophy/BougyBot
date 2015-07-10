@@ -1,6 +1,10 @@
 require 'nokogiri'
 require 'json'
 require 'rest-client'
+require 'yt'
+Yt.configure do |c|
+  c.api_key = BougyBot.options.google.url_api_key
+end
 # Bot namespace
 module BougyBot
   Url = Class.new Sequel::Model
@@ -97,13 +101,23 @@ module BougyBot
 
     # rubocop:disable Metrics/LineLength
     # urls are long, mmkay?
-    def fetch_title(wikipedia = true)
+    def fetch_title(wikipedia = true, youtube = true)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
+      return youtube_synopsis   if original =~ %r{https?://www\.youtube\.com/watch\?} && youtube
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
       return default_title unless title && title.first
       title.first.text
+    end
+
+    def youtube_synopsis
+      vid = original.match(/[?&]v=(?<id>[^&]*)/)
+      return 'Video Not Found' unless vid[:id]
+      video = Yt::Video.new id: vid[:id]
+      format('\'%s\' (%s views) - %s', video.title, video.view_count, video.description)
+    rescue
+      'Cannot fetch youtube title'
     end
 
     def wikipedia_synopsis

@@ -14,8 +14,8 @@ module BougyBot
       if found = find(nick: nick)
         if found.password_hash.nil?
           found.password = pass
-          found.approved = true
-          found.level    = :user
+          found.approved = true  if found.approved.nil?
+          found.level    = :user if found.level.nil?
           return found.save
         end
         warn "User #{nick} already exists"

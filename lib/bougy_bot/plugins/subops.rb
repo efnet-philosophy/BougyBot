@@ -169,6 +169,7 @@ module BougyBot
           m.reply "#{target} is gone or changed nicks" if @chatty
           return false
         end
+        binding.pry if @chatty
         if kickee.last.include? 'v'
           m.reply "#{kicker.nick}: Battle initiated with #{target}" if @chatty # rubocop:disable Metrics/LineLength
           return voice_versus_voice(m.channel, kicker, kickee)
