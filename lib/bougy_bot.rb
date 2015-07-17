@@ -59,6 +59,14 @@ module BougyBot
       e.join
     end
   end
+
+  def self.phil(bot)
+    bot.channels.detect { |d| d.name == '#philosophy' }
+  end
+
+  def self.cur_users(bot)
+    bot.config.authentication.logged_in
+  end
 end
 BougyBot::R 'lib/core_ext/hash'
 BougyBot::R 'options'

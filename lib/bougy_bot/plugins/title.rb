@@ -1,6 +1,7 @@
 require 'cinch'
 require 'nokogiri'
 require 'open-uri'
+require 'cinch/cooldown'
 
 # Bot Namespace
 module BougyBot
@@ -9,6 +10,7 @@ module BougyBot
     # Title & Url shortening bot
     class Title
       include Cinch::Plugin
+      enforce_cooldown
 
       listen_to :channel
       def initialize(*args)
@@ -16,28 +18,11 @@ module BougyBot
         super
       end
 
-      def abuser?(nick)
-        now = Time.now
-        synchronize(:abuser) do
-          @abuse[nick] ||= []
-          @abuse[nick] << now
-        end
-        @abuse[nick] = @abuse[nick].sort.reverse[0..15]
-        abusive? @abuse[nick]
-      end
-
-      def abusive?(times)
-        now = Time.now
-        times.select { |t| now - t < 180 }.size > 10
-      end
-
       def listen(m)
         nick = m.user.nick
         return if nick == bot.nick
         return if nick =~ /^(?:pangaea|GitHub|xbps-builder$|void-packages$)/
         log = do_log m
-        return if abuser? nick
-        return if Url.abuser? nick
         title_urls m, log.channel_id
       end
 

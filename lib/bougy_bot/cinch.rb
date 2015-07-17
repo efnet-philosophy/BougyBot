@@ -3,21 +3,21 @@ require 'cinch'
 require 'cinch/extensions/authentication'
 if BougyBot.options.clever
   require_relative './plugins/cleverbot.rb'
-  require 'cinch/plugins/news'
-  require 'cinch/plugins/evalso'
   require 'cinch-karma'
-  require 'cinch-urbandict'
   require 'cinch-dicebag'
-  require 'cinch/plugins/fortune'
-  require 'cinch/plugins/wikipedia'
   require_relative './plugins/haiku.rb'
-  require 'cinch-convert'
-  require 'cinch-calculate'
 end
 
 if BougyBot.options.useful
   require_relative './plugins/functions'
   require_relative './plugins/autovoice'
+  require 'cinch-convert'
+  require 'cinch-calculate'
+  require 'cinch/plugins/fortune'
+  require 'cinch/plugins/evalso'
+  require 'cinch/plugins/wikipedia'
+  require 'cinch/plugins/news'
+  require 'cinch-urbandict'
   require_relative './plugins/topiclock'
   require_relative './plugins/subops'
   require_relative './plugins/title'
@@ -54,7 +54,7 @@ module BougyBot
   class Cinch
     attr_reader :bot
     def initialize(server = nil, channels = nil)
-      @server = server || '2001:19f0::dead:beef:cafe'
+      @server = server || 'irc.efnet.org'
       @bot = ::Cinch::Bot.new
       @channels = channels || ['#pho', '#philrobot']
     end
@@ -65,25 +65,25 @@ module BougyBot
       if BougyBot.options.clever
         @plugins += [::Cinch::Plugins::Haiku,
                      ::Cinch::Plugins::CleverBot,
-                     ::Cinch::Plugins::News,
-                     ::Cinch::Plugins::EvalSo,
                      ::Cinch::Plugins::Karma,
-                     ::Cinch::Plugins::UrbanDict,
-                     ::Cinch::Plugins::Calculate,
-                     ::Cinch::Plugins::Wikipedia,
-                     ::Cinch::Plugins::Dicebag,
-                     ::Cinch::Plugins::Convert,
-                     ::Google,
-                     ::Cinch::Plugins::Fortune]
+                     ::Cinch::Plugins::Dicebag]
       end
 
       if BougyBot.options.useful
         @plugins += [BougyBot::Plugins::Functions,
                      BougyBot::Plugins::Topiclock,
+                     ::Cinch::Plugins::News,
+                     ::Cinch::Plugins::Wikipedia,
+                     ::Cinch::Plugins::EvalSo,
+                     ::Cinch::Plugins::UrbanDict,
                      BougyBot::Plugins::Autovoice,
                      BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
                      ::Cinch::Plugins::Weatherman,
+                     ::Cinch::Plugins::Calculate,
+                     ::Cinch::Plugins::Convert,
+                     ::Google,
+                     ::Cinch::Plugins::Fortune,
                      BougyBot::Plugins::QuoteR]
       end
       @plugins
@@ -96,6 +96,8 @@ module BougyBot
       @plugs = plugins
       @bot.configure do |c|
         c.shared[:cooldown] = { config: { '#philosophy' => { global: 10, user: 20 } } }
+        c.ssl.use = true
+        c.port = 6697
         c.server = @server
         c.channels = @channels
         c.plugins.plugins = @plugs

@@ -14,8 +14,9 @@ module BougyBot
 
       listen_to :join
       match(/autovoice (on|off)$/)
+      match(/voice ([^\s]*)$/, method: :voice)
+      match(/devoice ([^\s]*)$/, method: :devoice)
       enable_authentication
-
 
       def initialize(*args)
         super
@@ -25,6 +26,20 @@ module BougyBot
       def listen(m)
         return if m.user.nick == bot.nick
         m.channel.voice(m.user) if @autovoice
+      end
+
+      def voice(m, option)
+        return unless authenticated?(m, [:subops, :admins])
+        if user = m.channel.user.keys.detect { |k| k.nick == option }
+          m.channel.voice(user)
+        end
+      end
+
+      def devoice(m, option)
+        return unless authenticated?(m, [:subops, :admins])
+        if user = m.channel.user.keys.detect { |k| k.nick == option }
+          m.channel.devoice(user)
+        end
       end
 
       def execute(m, option)

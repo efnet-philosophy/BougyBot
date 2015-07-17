@@ -6,7 +6,7 @@ module BougyBot
                        log_level: Logger::INFO,
                        env: 'development',
                        channels: [],
-                       server: 'irc.shaw.ca',
+                       server: 'irc.efnet.org',
                        google: { url_api_key: nil },
                        logfile: $stdout }
 

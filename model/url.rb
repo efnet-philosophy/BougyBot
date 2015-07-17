@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'json'
 require 'rest-client'
 require 'yt'
+require 'uri'
 Yt.configure do |c|
   c.api_key = BougyBot.options.google.url_api_key
 end
@@ -23,6 +24,8 @@ module BougyBot
     def self.heard(url, name, channel_id)
       u = find original: url, channel_id: channel_id
       u ||= new(original: url, by: name, channel_id: channel_id)
+      u.times ||= 0
+      u.times += 1
       u.save
     end
 
@@ -60,17 +63,18 @@ module BougyBot
       return if ignores.include?(nick)
       if old?
         if by == nick
-          "#{nick}: Fuck you, you shared this already on #{pretty_at} '#{short_title}' -> #{short}"
+          "#{nick}: You shared this already on #{pretty_at} '#{short_title}' -> #{short} (shared #{times} times)"
         else
-          format('%s: OLD! First shared by %s on %s. "%s" (%s)',
+          format('%s: OLD! First shared by %s on %s. "%s" (%s) (shared %s times)',
                  nick,
                  by == nick ? 'You' : by,
                  pretty_at,
                  short_title,
-                 short)
+                 short,
+                 times)
         end
       else
-        format('%s: "%s" (%s)', nick, short_title, short)
+        format('%s: %s (%s)', nick, short_title, short)
       end
     end
     # rubocop:enable Metrics/AbcSize
@@ -83,7 +87,6 @@ module BougyBot
 
     def before_save
       self[:times] ||= 0
-      self[:times] += 1
       self[:title] ||= fetch_title
       self[:short] ||= shorten_url
       self[:last]  ||= Time.now
@@ -103,7 +106,7 @@ module BougyBot
     # urls are long, mmkay?
     def fetch_title(wikipedia = true, youtube = true)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
-      return youtube_synopsis   if original =~ %r{https?://www\.youtube\.com/watch\?} && youtube
+      return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
@@ -112,12 +115,20 @@ module BougyBot
     end
 
     def youtube_synopsis
-      vid = original.match(/[?&]v=(?<id>[^&]*)/)
-      return 'Video Not Found' unless vid[:id]
-      video = Yt::Video.new id: vid[:id]
-      format('\'%s\' (%s views) - %s', video.title, video.view_count, video.description)
+      vurl = URI.parse(original)
+      vid = if vurl.host == 'www.youtube.com'
+              URI.decode_www_form(vurl.query).to_h['v']
+            else
+              File.basename vurl.path
+            end
+      return 'Video Not Found' unless vid
+      video = Yt::Video.new id: vid
+      return 'Video Not Found' unless video.exists?
+      description = video.description.sub(video.title, '').gsub(/[\r\n]/, ' ').squeeze(' ')
+      description = description.match(/[a-zA-Z]/) ? format(' - %s', description) : ''
+      format('\'%s\' (%s views)%s', video.title, video.view_count, description)
     rescue
-      'Cannot fetch youtube title'
+      'Error fetching youtube title'
     end
 
     def wikipedia_synopsis

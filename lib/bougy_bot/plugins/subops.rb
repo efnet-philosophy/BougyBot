@@ -1,5 +1,6 @@
 require 'cinch'
 require 'cinch/cooldown'
+require 'ostruct'
 # Subops stuff
 #
 # Enable with !subops on
@@ -61,7 +62,7 @@ module BougyBot
         return unless kickee
         m.reply "#{kicker.nick} Challenges #{target} to a Dance Off" if @chatty
         Timer(5, shots: 1) do
-          results = voice_versus_voice(m.channel, kicker, kickee, 'Dance Off', DANCES.sample)
+          results = voice_versus_voice(m, kicker, kickee, 'Dance Off', DANCES.sample)
           if results
             winmsg = "#{kicker.nick} prevails with '#{message}' of #{results.first} to #{target}'s #{results.last}"
             m.channel.kick target, winmsg
@@ -155,27 +156,28 @@ module BougyBot
           return false
         end
         kicker = m.user
-        requestor = m.channel.users[kicker]
-        unless requestor
-          m.reply "No Requestor Found, wtf, #{m.user}?" if @chatty
-          return false
-        end
-        unless requestor.include?('v') || requestor.include?('o')
-          m.reply "No v or o for #{m.user}: #{requestor}" if @chatty
-          return false
-        end
+        auth_user = bot.config.authentication.logged_in.detect { |(k,v)| k ==  kicker }
         kickee = nick_to_user(m.channel, target)
         unless kickee
-          m.reply "#{target} is gone or changed nicks" if @chatty
+          if @chatty
+            kicker.msg "#{target} is gone or changed nicks"
+          else
+            m.reply "#{target} is gone or changed nicks"
+          end
           return false
         end
+        kickee_user = current_user(OpenStruct.new(user: kickee.first))
         binding.pry if @chatty
-        if kickee.last.include? 'v'
+        if kickee.last.include?('v') || (kickee_user && kickee_user.level == 'subop')
           m.reply "#{kicker.nick}: Battle initiated with #{target}" if @chatty # rubocop:disable Metrics/LineLength
-          return voice_versus_voice(m.channel, kicker, kickee)
-        end unless requestor.include?('o')
-        if kickee.last.include? 'o'
-          m.reply "#{m.user}: #{requestor} Can't kick an op: #{kickee.first}" if @chatty
+          return voice_versus_voice(m, kicker, kickee)
+        end unless authenticated?(m, :admins)
+        if kickee.last.include?('o') || (kickee_user && kickee_user.level == 'admin')
+          if @chatty
+            m.reply "#{m.user}: #{auth_user.level} Can't kick an op: #{kickee.first}"
+          else
+            kicker.msg "#{m.user}: #{auth_user.level} Can't kick an op: #{kickee.first}"
+          end
           m.channel.kick "#{kicker.nick}", "Lost battle to #{target}'s impenetrable '@' defense"
           return false
         end
@@ -184,14 +186,16 @@ module BougyBot
         true
       end
 
-      def voice_versus_voice(channel, kicker, kickee, ftype = 'battle', fdefense = 'defense')
+      def voice_versus_voice(m, kicker, kickee, ftype = 'battle', fdefense = 'defense')
+        channel = m.channel
         if kickee.last.include? 'o'
           @protected << kickee.first.nick
           Timer(30, shots: 1) { @protected.delete kickee.first.nick }
           channel.kick "#{kicker.nick}", "Lost #{ftype} to #{kickee.first.nick}'s impenetrable '@' #{fdefense}"
           return false
         end
-        # TODO: write some better battle logic
+        return true if authenticated? m, :admins
+        # TODO: write some better battle logic, take into account karma?
         kicker_points = rand(64)
         kickee_points = rand(64)
         if kickee_points > kicker_points
