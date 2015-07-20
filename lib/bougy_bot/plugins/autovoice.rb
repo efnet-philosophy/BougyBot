@@ -30,16 +30,20 @@ module BougyBot
 
       def voice(m, option)
         return unless authenticated?(m, [:subops, :admins])
-        if user = m.channel.user.keys.detect { |k| k.nick == option }
-          m.channel.voice(user)
+        if user = m.channel.users.keys.detect { |k| k.nick == option }
+          m.channel.voice(user.nick)
         end
+      rescue => e
+        m.reply "Error: #{e}"
       end
 
       def devoice(m, option)
         return unless authenticated?(m, [:subops, :admins])
-        if user = m.channel.user.keys.detect { |k| k.nick == option }
-          m.channel.devoice(user)
+        if user = m.channel.users.keys.detect { |k| k.nick == option }
+          m.channel.devoice(user.nick)
         end
+      rescue => e
+        m.reply "Error: #{e}"
       end
 
       def execute(m, option)

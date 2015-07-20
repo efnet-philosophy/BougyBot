@@ -11,8 +11,9 @@ end
 if BougyBot.options.useful
   require_relative './plugins/functions'
   require_relative './plugins/autovoice'
+  require_relative './plugins/wolfram'
   require 'cinch-convert'
-  require 'cinch-calculate'
+  #require 'cinch-calculate'
   require 'cinch/plugins/fortune'
   require 'cinch/plugins/evalso'
   require 'cinch/plugins/wikipedia'
@@ -80,7 +81,7 @@ module BougyBot
                      BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
                      ::Cinch::Plugins::Weatherman,
-                     ::Cinch::Plugins::Calculate,
+                     BougyBot::Plugins::Wolfram,
                      ::Cinch::Plugins::Convert,
                      ::Google,
                      ::Cinch::Plugins::Fortune,

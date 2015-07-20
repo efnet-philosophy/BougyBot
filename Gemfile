@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'wolfram-alpha'
 gem 'htmlentities'
 gem 'bcrypt'
 gem 'yt'

@@ -6,13 +6,26 @@ module BougyBot
     # The topiclock functions
     class Topiclock
       include ::Cinch::Plugin
+      include ::Cinch::Extensions::Authentication
+      TIMEOUT = 360
       match(/tlock (on|off)$/)
+      match(/topic (.*)$/, method: :topic)
       listen_to :topic
 
       def initialize(*args)
         super
         @tlock = true
-        @topic = false
+      end
+
+      def topic(m, option)
+        return unless authenticated? m
+        m.channel.topic = option
+        #m.channel.mode '+t'
+        #Timer(TIMEOUT, shots: 1) do
+        #  m.channel.mode '-t'
+        #end
+      rescue => e
+        m.reply e
       end
 
       def execute(m, option)
@@ -22,13 +35,10 @@ module BougyBot
       end
 
       def listen(m)
-        return if @topic
         return unless m.command == 'TOPIC'
-        @topic = true
         m.channel.mode '+t'
-        Timer(120, shots: 1) do
+        Timer(TIMEOUT, shots: 1) do
           m.channel.mode '-t'
-          @topic = false
         end
       end
     end

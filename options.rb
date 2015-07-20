@@ -8,6 +8,7 @@ module BougyBot
                        channels: [],
                        server: 'irc.efnet.org',
                        google: { url_api_key: nil },
+                       wolfram_key: nil,
                        logfile: $stdout }
 
   class << self
@@ -69,5 +70,7 @@ module BougyBot
     o.sub :google do
       o 'API Auth Key for URL Shortening', :url_api_key, ENV['GOOGLE_URL_SHORTEN_API_KEY'] || loaded_options[:google][:url_api_key]
     end
+
+    o 'Wolfram', :wolfram_key, BougyBot.options.wolfram_key || loaded_options[:wolfram_key]
   end
 end

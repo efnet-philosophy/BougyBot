@@ -108,6 +108,7 @@ module BougyBot
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
+        binding.pry if @chatty
         return unless res
         message ||= "Kicked by #{m.user}'s request"
         message << " (#{res.first} > #{res.last})" if res.respond_to? :first
@@ -172,6 +173,7 @@ module BougyBot
           m.reply "#{kicker.nick}: Battle initiated with #{target}" if @chatty # rubocop:disable Metrics/LineLength
           return voice_versus_voice(m, kicker, kickee)
         end unless authenticated?(m, :admins)
+        binding.pry if @chatty
         if kickee.last.include?('o') || (kickee_user && kickee_user.level == 'admin')
           if @chatty
             m.reply "#{m.user}: #{auth_user.level} Can't kick an op: #{kickee.first}"
@@ -181,6 +183,7 @@ module BougyBot
           m.channel.kick "#{kicker.nick}", "Lost battle to #{target}'s impenetrable '@' defense"
           return false
         end
+        binding.pry if @chatty
         @protected << target
         Timer(30, shots: 1) { @protected.delete target }
         true
