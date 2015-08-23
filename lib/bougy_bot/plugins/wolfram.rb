@@ -21,8 +21,13 @@ module BougyBot
         wolfram = WolframAlpha::Client.new(api_id)
 
         response = wolfram.query(query)
-        if result = (response['Value'] || response['Result'])
-          result.subpods.map(&:plaintext).join('; ')
+        if response.pods.size > 1
+          relevant_pods = response.pods.reject { |n| n.id == 'Input' }
+          relevant_pods.map do |result|
+            format('%s: %s',
+                   result.id,
+                   result.subpods.map(&:plaintext).join('; '))
+          end.join(':: ').tr("\n", ' ')
         else
           'Sorry, I\'ve no idea'
         end

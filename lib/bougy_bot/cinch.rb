@@ -4,7 +4,6 @@ require 'cinch/extensions/authentication'
 if BougyBot.options.clever
   require_relative './plugins/cleverbot.rb'
   require 'cinch-karma'
-  require 'cinch-dicebag'
   require_relative './plugins/haiku.rb'
 end
 
@@ -12,8 +11,9 @@ if BougyBot.options.useful
   require_relative './plugins/functions'
   require_relative './plugins/autovoice'
   require_relative './plugins/wolfram'
+  require 'cinch-dicebag'
   require 'cinch-convert'
-  #require 'cinch-calculate'
+  # require 'cinch-calculate'
   require 'cinch/plugins/fortune'
   require 'cinch/plugins/evalso'
   require 'cinch/plugins/wikipedia'
@@ -26,22 +26,35 @@ if BougyBot.options.useful
   require 'cinch-weatherman'
 end
 
-require 'open-uri'
-require 'nokogiri'
-require 'cgi'
+require_relative './google_search'
+require 'cinch/cooldown'
+
 # Super simple google search TODO: Replace, Idjit
 class Google # {{{
   include Cinch::Plugin
-  match(/google (.+)/)
+  enforce_cooldown
+  set :prefix, '?'
+  match(/rules$/, method: :rules)
+  match(/wtf\?$/, method: :wiki)
+  match(/\?\s*(.+)/)
+
   def search(query)
-    url = "http://www.google.com/search?q=#{CGI.escape(query)}"
-    res = Nokogiri::HTML(open(url)).at('h3.r')
-    title = res.text
-    link = res.at('a')[:href]
-    desc = res.at('./following::div').children.first.text
-    CGI.unescape_html "#{title} - #{desc} (#{link})"
-  rescue
+    BougyBot::GoogleSearch.new(query).display
+  rescue => e
+    unless @nopry
+      warn "Error: #{e}"
+      require 'pry'
+      binding.pry unless @nopry
+    end
     'No results found'
+  end
+
+  def wiki(m)
+    m.reply('Wiki: https://github.com/efnet-philosophy/efnet-philosophy.github.io/wiki')
+  end
+
+  def rules(m)
+    m.reply('Rules of the channel: https://github.com/efnet-philosophy/efnet-philosophy.github.io/wiki/Rules-of-the-Channel')
   end
 
   def execute(m, query)
@@ -77,6 +90,7 @@ module BougyBot
                      ::Cinch::Plugins::Wikipedia,
                      ::Cinch::Plugins::EvalSo,
                      ::Cinch::Plugins::UrbanDict,
+                     ::Cinch::Plugins::Dicebag,
                      BougyBot::Plugins::Autovoice,
                      BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
