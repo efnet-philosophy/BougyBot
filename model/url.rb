@@ -3,6 +3,7 @@ require 'json'
 require 'rest-client'
 require 'yt'
 require 'uri'
+
 Yt.configure do |c|
   c.api_key = BougyBot.options.google.url_api_key
 end
@@ -21,8 +22,23 @@ module BougyBot
            update_on_create: true
     many_to_one :channel
 
+    def self.find_filtered(args)
+      if res = find(original: args[:original], channel_id: args[:channel_id])
+        return res
+      end
+      u = new(original: args[:original], by: args[:name], channel_id: args[:channel_id])
+      u.short_title
+      title_regex = Regexp.escape(u.title).sub(/\(\d+\\ views/, '([0-9]+ views')
+      if res = find(title: /{#{title_regex}/)
+        return res
+      end
+      nil
+    rescue
+      binding.pry if $dance_baby
+    end
+
     def self.heard(url, name, channel_id)
-      u = find original: url, channel_id: channel_id
+      u = find_filtered original: url, channel_id: channel_id, name: name
       u ||= new(original: url, by: name, channel_id: channel_id)
       u.times ||= 0
       u.times += 1
@@ -50,6 +66,7 @@ module BougyBot
     end
 
     def short_title
+      self.title = fetch_title unless title
       return @short_title if @short_title
       st = title.size > TLIMIT ? "#{title[0..TLIMIT]}..." : title
       @short_title = st.gsub(/\n/, ' ').strip

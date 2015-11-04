@@ -19,7 +19,7 @@ module BougyBot
       match(/^.second_date(.+)?/, method: :second_date, use_prefix: false)
 
       def second_date(m, target = nil)
-        ans = BougyBot::SecondDate.best(target)
+        ans = BougyBot::SecondDate.best(target.strip)
         return m.reply 'No Dice' unless ans
         m.reply format('%s - %s',
                        (ans.summary rescue ans.description),
