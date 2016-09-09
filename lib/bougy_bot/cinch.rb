@@ -24,6 +24,8 @@ if BougyBot.options.useful
   require_relative './plugins/title'
   require_relative './plugins/quote'
   require 'cinch-weatherman'
+  #require 'cinch-lastactive'
+  require 'cinch-seen'
 end
 
 require_relative './google_search'
@@ -35,7 +37,8 @@ class Google # {{{
   enforce_cooldown
   set :prefix, '?'
   match(/rules$/, method: :rules)
-  match(/wtf\?$/, method: :wiki)
+  match(/wtf$/, method: :wiki)
+  match(/subops$/, method: :subops)
   match(/\?\s*(.+)/)
 
   def search(query)
@@ -44,9 +47,13 @@ class Google # {{{
     unless @nopry
       warn "Error: #{e}"
       require 'pry'
-      binding.pry unless @nopry
+      binding.pry if @pry
     end
     'No results found'
+  end
+
+  def subops(m)
+    m.reply('Wiki: https://github.com/efnet-philosophy/efnet-philosophy.github.io/wiki/Subops')
   end
 
   def wiki(m)
@@ -99,6 +106,7 @@ module BougyBot
                      ::Cinch::Plugins::Convert,
                      ::Google,
                      ::Cinch::Plugins::Fortune,
+                     ::Cinch::Plugins::Seen,
                      BougyBot::Plugins::QuoteR]
       end
       @plugins
@@ -111,8 +119,8 @@ module BougyBot
       @plugs = plugins
       @bot.configure do |c|
         c.shared[:cooldown] = { config: { '#philosophy' => { global: 10, user: 20 } } }
-        c.ssl.use = true
-        c.port = 6697
+        c.ssl.use = false
+        c.port = 6667
         c.server = @server
         c.channels = @channels
         c.plugins.plugins = @plugs

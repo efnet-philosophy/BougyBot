@@ -12,9 +12,18 @@ module BougyBot
       include ::Cinch::Plugin
       include Cinch::Extensions::Authentication
 
+      MATH_MAPS = {
+        :* => %w{times thymes timez multiplied_by myltiply},
+        :- => %w{minus mynus subtracted_from subtract},
+        :+ => %w{plus add added_to phlus},
+      }
+      ANSWERS = {}
+      AUTHORS = BougyBot::Quote.distinct(:author).where(author: /^\w[\w ]*$/).select_map(:author)
+
       listen_to :join
       match(/autovoice (on|off)$/)
       match(/voice ([^\s]*)$/, method: :voice)
+      match(/voiceme (.*)?$/, method: :voiceme)
       match(/devoice ([^\s]*)$/, method: :devoice)
       enable_authentication
 
@@ -23,9 +32,48 @@ module BougyBot
         @autovoice = false
       end
 
+      def math_problem(nick)
+        op = MATH_MAPS.keys.sample
+        num1, num2 = rand(100), rand(100)
+        answer = num1.send(op, num2)
+        ANSWERS[nick] = answer
+        [MATH_MAPS[op].sample, num1, num2, answer]
+      end
+
+      def quote_author(nick)
+        author = AUTHORS.sample
+        q = BougyBot::Quote.where(author: author).select_map(:quote).sample
+        all_authors = [author, AUTHORS.sample, AUTHORS.sample, AUTHORS.sample, AUTHORS.sample, AUTHORS.sample]
+        ANSWERS[nick] = author
+        [q, *all_authors.sort_by { |_, _| rand(100) <=> rand(100) } ]
+      end
+
       def listen(m)
-        return if m.user.nick == bot.nick
-        m.channel.voice(m.user) if @autovoice
+        user = m.user
+        return if user.nick == bot.nick
+        if @autovoice
+          m.channel.voice(user.nick)
+        else
+          return unless m.channel.name == '#philosophy'
+          # m.user.msg 'Hey, we are moderated because dionysus is an asshat. If you want voice, ask in #pho:'
+          # if user.host !~ /^\d+\.\d+\.\d+\.\d+$/
+          #   op, num1, num2, answer = math_problem(user.nick)
+          #   m.user.msg 'Hey, we are moderated because dionysus is an asshat. If you want voice, you must solve the math problem:'
+          #   m.user.msg "What is #{num1} #{op} #{num2}?"
+          # else
+          #   begin
+          #     #quote = quote_author(user.nick)
+          #     #m.user.msg "Who said '#{quote.shift}'?"
+          #     #m.user.msg "Choices are: #{quote.join(', ')}"
+          #   rescue => e
+          #     if m.user.nick =~ /^bougy/
+          #       m.user.msg e
+          #       m.user.msg e.backtrace.join('\n')
+          #     end
+          #   end
+          # end
+          #m.user.msg "/msg #{bot.nick} !voiceme <theanswer> to me for voice."
+        end
       end
 
       def voice(m, option)
@@ -35,6 +83,41 @@ module BougyBot
         end
       rescue => e
         m.reply "Error: #{e}"
+      end
+
+      def voiceme(m, answer)
+        user = m.user
+        correct_answer = ANSWERS[user.nick]
+        return unless correct_answer
+        channels = m.bot.channels.select { |c| c.users.detect { |u|  u.first.nick == user.nick } }
+        channels.each do |chan|
+          next unless chan.name == '#philosophy'
+          found_user = chan.users.detect { |t| t.first.nick == user.nick }
+          if found_user
+            if found_user.last.include? 'v'
+              m.reply "You fucking twat, you already have voice in #{chan.name}, what more do you need?"
+              return
+            end
+            correct = false
+            if correct_answer.is_a? Integer
+              correct = true if answer.to_i == correct_answer
+            else
+              correct = true if correct_answer.downcase == answer.downcase
+            end
+            if correct
+              chan.voice user.nick
+            else
+              m.reply 'That is an incorrect answer, iq test failed. No voice for you!'
+              chan.kick user.nick, 'Failed IQ Test'
+            end
+          else
+            m.reply 'Voice you where? You are not in any channels I am in, dumbass'
+            return
+          end
+        end
+      rescue => e
+        m.reply "Error: #{e}"
+        m.reply e.backtrace.join("\n")
       end
 
       def devoice(m, option)
