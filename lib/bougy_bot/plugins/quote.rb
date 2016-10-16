@@ -77,7 +77,7 @@ module BougyBot
             user.msg("Error: #{e}")
             return
           end
-          ds = ds.where(message: /#{regex}/i)
+          ds = ds.where(message: /#{query}/i)
         end
         ds = ds.order(Sequel.desc(:at)).limit(count)
         found_count = ds.count
