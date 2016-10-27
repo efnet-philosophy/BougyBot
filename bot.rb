@@ -11,6 +11,7 @@ BougyBot::M 'channel'
 BougyBot::M 'log'
 BougyBot::M 'url'
 BougyBot::M 'quote'
+BougyBot::M 'note'
 BougyBot::L 'cinch'
 
 def clever(h = {})
