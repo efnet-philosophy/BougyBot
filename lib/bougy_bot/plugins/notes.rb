@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 require 'cinch'
+require_relative '../../bougy_bot'
+require 'cinch/cooldown'
 
 module BougyBot
+  M 'note'
 	module Plugins
 		# Cinch Plugin to send notes
 		class Notes
 			include Cinch::Plugin
+      enforce_cooldown
 
 			listen_to :channel, method: :send_notes
 			match(/!tell (\w+) (.+)/, method: :make_note, use_prefix: false)
