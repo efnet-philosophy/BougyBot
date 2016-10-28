@@ -12,7 +12,7 @@ module BougyBot
       enforce_cooldown
 
 			listen_to :channel, method: :send_notes
-			match(/!tell (\w+) (.+)/, method: :make_note, use_prefix: false)
+			match(/^!tell (\w+) (.+)/, method: :make_note, use_prefix: false)
 
 			def make_note(m, user, message)
 				if note = Note.create(from: m.user.nick, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
