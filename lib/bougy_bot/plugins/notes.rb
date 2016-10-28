@@ -13,7 +13,7 @@ module BougyBot
       enforce_cooldown
 
 			listen_to :channel, method: :send_notes
-			match(/^!tell (\w+) (.+)/, method: :make_note, use_prefix: false)
+			match(/^!tell (\S+) (.+)/, method: :make_note, use_prefix: false)
 
 			def make_note(m, user, message)
         return m.reply "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
