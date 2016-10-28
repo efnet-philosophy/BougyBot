@@ -17,7 +17,7 @@ module BougyBot
 
 			def make_note(m, user, message)
         return m.reply "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
-        known_user = User.find(Sequel.|(nick: /#{user}/i, mask: /!#{user}@/i)).limit(1)
+        known_user = User.find(Sequel.|(nick: /#{user}/i, mask: /!#{user}@/i))
         return m.reply "I don't know anyone named #{user}" unless known_user
 				if note = Note.create(from: m.user.nick, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
 					m.reply "ok, I will let #{user} know when I see them! (Note #{note.id})"
@@ -25,10 +25,10 @@ module BougyBot
 					m.reply 'Problem saving note db record'
 				end
 			rescue => e
-				m.reply 'Error creating note'
-				m.reply e
+        m.user.send 'Error creating note'
+        m.user.send e
 				e.backtrace.each do |err|
-					m.reply err
+          m.user.send err
 				end
 			end
 
