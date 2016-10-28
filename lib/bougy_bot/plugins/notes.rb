@@ -16,7 +16,7 @@ module BougyBot
 			match(/^!tell (\w+) (.+)/, method: :make_note, use_prefix: false)
 
 			def make_note(m, user, message)
-        return "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
+        return m.reply "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
         known_user = User.find(Sequel.|(nick: /#{user}/i, mask: /!#{user}@/i)).limit(1)
         return m.reply "I don't know anyone named #{user}" unless known_user
 				if note = Note.create(from: m.user.nick, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
