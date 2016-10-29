@@ -10,6 +10,7 @@ module BougyBot
 		# Cinch Plugin to send notes
 		class Notes
 			include Cinch::Plugin
+      include Cinch::Extensions::Authentication
       enforce_cooldown
       enable_authentication
 
