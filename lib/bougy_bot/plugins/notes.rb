@@ -22,7 +22,7 @@ module BougyBot
         known_user = User.find(Sequel.or(nick: /#{user}/i, mask: /!#{user}@/i))
         return m.reply "I don't know anyone named #{user}" unless known_user
         return m.reply "You can't do that, brah" unless authenticated? m
-				if note = Note.create(from: m.user.mask, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
+        if note = Note.create(from: m.user.mask.to_s, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
 					m.reply "ok, I will let #{user} know when I see them! (Note #{note.id})"
 				else
 					m.reply 'Problem saving note db record'
