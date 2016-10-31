@@ -21,7 +21,7 @@ module BougyBot
         return m.reply "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
         known_user = User.find(Sequel.or(nick: /#{user}/i, mask: /!#{user}@/i))
         return m.reply "I don't know anyone named #{user}" unless known_user
-        return m.reply "You can't do that, brah" unless authenticated? m
+        return m.reply "You can't do that without being logged in, brah. See http://tinyurl.com/efnetphilo-register" unless authenticated? m
         if note = Note.create(from: m.user.mask.to_s, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
 					m.reply "ok, I will let #{user} know when I see them! (Note #{note.id})"
 				else
