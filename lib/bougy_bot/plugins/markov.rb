@@ -18,7 +18,7 @@ module BougyBot
 
 		  def execute(m)
 		  	if Regexp.new("^" + Regexp.escape(m.bot.nick + ":" )) =~ m.message
-		  		m.reply @markov.generate_n_sentences(1)
+          Timer(rand(3..10), shots: 1) { m.reply @markov.generate_n_sentences(1) }
 		  	elsif m.message.match /(https?:\/\/[^\s]+)/ # return on urls
 		  		return
 		  	else
