@@ -1,10 +1,12 @@
 require 'marky_markov'
 require 'cinch'
+require 'cinch/cooldown'
 
 module BougyBot
 	module Plugins
 		class Markov
 		  include Cinch::Plugin
+      enforce_cooldown
 
 		  set plugin_name: "Markov"
 
