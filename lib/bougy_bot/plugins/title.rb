@@ -32,7 +32,12 @@ module BougyBot
 
       def title_urls(m, channel_id)
         urls = URI.extract(m.message, %w(http https))
-        urls.each do |u|
+        if urls.size > 3
+          m.reply "Don't be an asshole #{m.user.nick}"
+          m.channel.kick m.user.nick
+          return
+        end
+        urls.sort.uniq.each do |u|
           rep = Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
           m.reply rep
         end
