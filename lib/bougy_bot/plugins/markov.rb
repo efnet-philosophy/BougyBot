@@ -19,9 +19,11 @@ module BougyBot
 		  end
 
 		  def execute(m)
-		  	if Regexp.new(Regexp.escape(m.bot.nick)) =~ m.message
+        if Regexp.new(Regexp.escape(m.bot.nick)) =~ m.message || m.user.nick =~ /strewth/ || m.message =~ /strewth/
+          return if rand(1..10) < 7
           Timer(rand(3..10), shots: 1) { m.reply("#{m.user.nick}: #{@markov.generate_n_sentences(rand(1..3))}") }
-		  	elsif m.message.match /(https?:\/\/[^\s]+)/ # return on urls
+        end
+		  	if m.message.match /(https?:\/\/[^\s]+)/ # return on urls
 		  		return
 		  	else
 		  		@markov.parse_string(m.message)

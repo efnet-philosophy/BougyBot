@@ -15,7 +15,7 @@ if BougyBot.options.useful
   require 'cinch-convert'
   # require 'cinch-calculate'
   require 'cinch/plugins/fortune'
-  require 'cinch/plugins/evalso'
+  require 'cinch/plugins/eval_in'
   require 'cinch/plugins/wikipedia'
   require 'cinch/plugins/news'
   require 'cinch-urbandict'
@@ -25,7 +25,7 @@ if BougyBot.options.useful
   require_relative './plugins/quote'
   require_relative './plugins/notes'
   require_relative './plugins/markov'
-  require 'cinch-weatherman'
+  require_relative './plugins/weatherman'
   #require 'cinch-lastactive'
   require 'cinch-seen'
 end
@@ -97,13 +97,13 @@ module BougyBot
                      BougyBot::Plugins::Topiclock,
                      ::Cinch::Plugins::News,
                      ::Cinch::Plugins::Wikipedia,
-                     ::Cinch::Plugins::EvalSo,
+                     ::Cinch::Plugins::EvalIn,
                      ::Cinch::Plugins::UrbanDict,
                      ::Cinch::Plugins::Dicebag,
                      BougyBot::Plugins::Autovoice,
                      BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
-                     ::Cinch::Plugins::Weatherman,
+                     BougyBot::Plugins::Weatherman,
                      BougyBot::Plugins::Wolfram,
                      BougyBot::Plugins::Notes,
                      BougyBot::Plugins::Markov,
