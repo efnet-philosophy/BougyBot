@@ -8,6 +8,7 @@ module BougyBot
 
         def initialize(location)
           @data = WeatherUnderground::Base.new.CurrentObservations(location)
+          @locations  = @data.display_location
           @location   = @data.display_location.first.full
           @temp       = @data.temperature_string
           @station    = @data.station_id

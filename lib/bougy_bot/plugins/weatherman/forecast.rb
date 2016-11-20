@@ -6,22 +6,22 @@ module BougyBot
       class Forecast
         def initialize(location)
           data = WeatherUnderground::Base.new.TextForecast(location)
-          tomorrow = data.days[2]
-          fail ArgumentError if tomorrow.nil?
+          next_period = data.days[1]
+          fail ArgumentError if next_period.nil?
 
           @location       = Weather.new(location).location
-          @day_name       = tomorrow.title
-          @forecast_day   = tomorrow.text
-
-          tomorrow_night = data.days[3]
-          @night_name     = tomorrow_night.title if tomorrow_night
-          @forecast_night = tomorrow_night.text if tomorrow_night
+          @results = [1, 2, 3].map do |i|
+            if deez = data.days[i]
+              {name: deez.title, text: deez.text}
+            end
+          end.compact
         end
 
         def to_s
-          s = "#{@day_name} in #{@location}: #{@forecast_day}, "
-          s << "#{@night_name}: #{@forecast_night}" if @night_name
-          s
+          s = @results.map do |item|
+            "#{item[:name]} #{item[:text]}"
+          end
+          "In #{@location} #{s.join}"
         end
 
         def append
