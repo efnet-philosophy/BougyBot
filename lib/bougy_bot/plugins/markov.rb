@@ -19,12 +19,23 @@ module BougyBot
 		  end
 
 		  def execute(m)
-        return unless m.message =~ Regexp.new(Regexp.escape(m.bot.nick)) || %w(strewth wave).include?(m.user.nick) || m.message =~ /\b(strewth|wave)\b/
-        return if rand(1..10) < 8
-        imer(rand(3..10), shots: 1) { m.reply("#{m.user.nick}: #{@markov.generate_n_sentences(rand(1..3))}") }
+        if m.message =~ /^useful[:,] /
+          spew m
+        elsif m.message =~ Regexp.new(Regexp.escape(m.bot.nick)) || %w(strewth wave).include?(m.user.nick) || m.message =~ /\b(strewth|wave)\b/
+          return if rand < 0.9
+          spew m
+        elsif m.message.each_char.select { |t| t =~ /[A-Z]/ }.count > 10
+          spew m if rand > 0.66
+        elsif rand > 0.995
+          spew m
+        end
 		  	return unless m.message.match /(https?:\/\/[^\s]+)/ # return on urls
 		  	@markov.parse_string(m.message)
 		  end
+
+      def spew(m)
+        Timer(rand(3 .. 10), shots: 1) { m.reply("#{m.user.nick}: #{@markov.generate_n_sentences(rand(1..3))}") }
+      end
 
 		  def save_dict
 		  	@markov.save_dictionary!
