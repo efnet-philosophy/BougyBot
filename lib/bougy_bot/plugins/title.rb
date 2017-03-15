@@ -32,7 +32,7 @@ module BougyBot
 
       def title_urls(m, channel_id)
         urls = URI.extract(m.message, %w(http https))
-        if urls.size > 3
+        if urls.size > 5
           m.reply "Don't be an asshole #{m.user.nick}"
           m.channel.kick m.user.nick
           return
