@@ -15,7 +15,6 @@ if BougyBot.options.useful
   require 'cinch-convert'
   # require 'cinch-calculate'
   require 'cinch/plugins/fortune'
-  require 'cinch/plugins/eval_in'
   require 'cinch/plugins/wikipedia'
   require 'cinch/plugins/news'
   require 'cinch-urbandict'
@@ -97,7 +96,6 @@ module BougyBot
                      BougyBot::Plugins::Topiclock,
                      ::Cinch::Plugins::News,
                      ::Cinch::Plugins::Wikipedia,
-                     ::Cinch::Plugins::EvalIn,
                      ::Cinch::Plugins::UrbanDict,
                      ::Cinch::Plugins::Dicebag,
                      BougyBot::Plugins::Autovoice,

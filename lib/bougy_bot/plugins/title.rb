@@ -9,6 +9,7 @@ module BougyBot
   module Plugins
     # Title & Url shortening bot
     class Title
+      EXCLUDE_ANNOUNCE = %w(#linuxgeneration)
       include Cinch::Plugin
       enforce_cooldown
 
@@ -31,6 +32,7 @@ module BougyBot
       end
 
       def title_urls(m, channel_id)
+        return if EXCLUDE_ANNOUNCE.include? m.channel
         urls = URI.extract(m.message, %w(http https))
         if urls.size > 5
           m.reply "Don't be an asshole #{m.user.nick}"

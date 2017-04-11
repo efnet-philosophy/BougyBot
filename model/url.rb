@@ -124,6 +124,7 @@ module BougyBot
     def fetch_title(wikipedia = true, youtube = true)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      Log.info "Getting #{original}"
       raw = open(original)
       doc = Nokogiri(raw.read)
       title = doc.xpath('/html/head/title')
