@@ -25,7 +25,7 @@ module BougyBot
         'Captivating Flamenco',
         'Thrilling Cha-Cha',
         'Foxy Foxtrot'
-      ]
+      ].freeze
       include ::Cinch::Plugin
       include Cinch::Extensions::Authentication
       enforce_cooldown

@@ -25,6 +25,8 @@ module BougyBot
       match(/voice ([^\s]*)$/, method: :voice)
       match(/voiceme (.*)?$/, method: :voiceme)
       match(/devoice ([^\s]*)$/, method: :devoice)
+      match(/\+m$/, method: :moderate)
+      match(/\-m$/, method: :unmoderate)
       enable_authentication
 
       def initialize(*args)
@@ -81,6 +83,20 @@ module BougyBot
         if user = m.channel.users.keys.detect { |k| k.nick == option }
           m.channel.voice(user.nick)
         end
+      rescue => e
+        m.reply "Error: #{e}"
+      end
+
+      def moderate(m)
+        return unless authenticated?(m, [:subops, :admins])
+        m.channel.mode('+m')
+      rescue => e
+        m.reply "Error: #{e}"
+      end
+
+      def unmoderate(m)
+        return unless authenticated?(m, [:subops, :admins])
+        m.channel.mode('-m')
       rescue => e
         m.reply "Error: #{e}"
       end

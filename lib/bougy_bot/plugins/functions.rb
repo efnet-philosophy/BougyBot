@@ -5,7 +5,7 @@ module BougyBot
   M 'url'
   module Plugins
     # Bot Functions
-    class Functions
+    class Functions # rubocop:disable Metrics/ClassLength
       include ::Cinch::Plugin
       enforce_cooldown
       match(/^\.chug ?(\d+)?$/, method: :chug, use_prefix: false)
@@ -26,7 +26,7 @@ module BougyBot
                        Url.google_shortened_url(ans.link))
       rescue => e
         warn 'Second Date Fail'
-        warn "#{e}"
+        warn e.to_s
         warn e.backtrace.join('\n\t')
         m.reply 'No Dice'
       end
@@ -44,26 +44,26 @@ module BougyBot
       end
 
       def op(m, target)
-        return unless m.user.nick.match(/bougyman|death_syn/i)
-        return unless m.user.host.match(/we\.rubyists\.com|deathsyn\.com/)
+        return unless m.user.nick =~ /bougyman|death_syn/i
+        return unless m.user.host =~ /we\.rubyists\.com|deathsyn\.com/
         m.channel.op(User(target))
       end
 
       def pouring(m, target)
         return unless check_perms(m)
-        if @drinkers.nil? || @drinkers.size == 0
+        if @drinkers.nil? || @drinkers.size.zero?
           reset
           @chugging = nil
           m.reply "PREPARE! #{m.user.nick} is Pouring #{target}"
           @drinkers = { m.user.nick => target }
         else
-          ready(m, "#{target}")
+          ready(m, target.to_s)
         end
       end
 
       def ready(m, target = nil)
         return unless check_perms(m)
-        if @drinkers.nil? || @drinkers.size == 0
+        if @drinkers.nil? || @drinkers.size.zero?
           m.reply 'No one has poured yet!'
           return
         end
@@ -86,7 +86,7 @@ module BougyBot
 
       def chug(m, target)
         return unless check_perms(m)
-        return if @drinkers.nil? || @drinkers.size == 0
+        return if @drinkers.nil? || @drinkers.size.zero?
         if target.to_i < 1
           count = 5
         else
@@ -102,7 +102,7 @@ module BougyBot
         m.reply "#{@drinkers.keys.join(', ')}: CHUG!"
         @time = Time.now.to_i
         @timer = Time.now.to_i
-        Timer(300, shots: 1) { if @timer.nil? || @drinkers.nil? || @drinkers.size == 0; nil; else; m.reply "#{@drinkers.keys.join(', ')} took too long, resetting!"; reset; m.reply 'Chugging is complete'; end }
+        Timer(300, shots: 1) { if @timer.nil? || @drinkers.nil? || @drinkers.size.zero?; nil; else; m.reply "#{@drinkers.keys.join(', ')} took too long, resetting!"; reset; m.reply 'Chugging is complete'; end }
       end
 
       def done(m)
