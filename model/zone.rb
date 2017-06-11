@@ -25,7 +25,7 @@ module BougyBot
     end
 
     def time(t = Time.now)
-      timezone.time t
+      timezone.time_with_offset t
     end
 	end
 end
