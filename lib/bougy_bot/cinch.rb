@@ -11,6 +11,7 @@ if BougyBot.options.useful
   require_relative './plugins/functions'
   require_relative './plugins/autovoice'
   require_relative './plugins/wolfram'
+  require_relative './plugins/times'
   require 'cinch-dicebag'
   require 'cinch-convert'
   # require 'cinch-calculate'
@@ -99,6 +100,7 @@ module BougyBot
                      ::Cinch::Plugins::UrbanDict,
                      ::Cinch::Plugins::Dicebag,
                      BougyBot::Plugins::Autovoice,
+                     BougyBot::Plugins::Times,
                      BougyBot::Plugins::Subops,
                      BougyBot::Plugins::Title,
                      BougyBot::Plugins::Weatherman,
