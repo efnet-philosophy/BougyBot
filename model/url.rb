@@ -121,17 +121,20 @@ module BougyBot
       'Screw this untitled link'
     end
 
-    require 'net/http'
-    def http_head(uri)
-      Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == 'https')) do |http|
+    def head
+      require 'net/http'
+      @head ||= Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == 'https')) do |http|
         http.head(uri.request_uri)
       end
     end
 
-    def uri_filtered?(wikipedia, youtube)
+    def uri
+      @uri ||= URI.parse(original)
+    end
+
+    def url_filtered?(wikipedia, youtube)
       return true if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return true if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
-      @head ||= http_head(uri = URI.parse(original))
       return true if uri.host == 'photos.app.goo.gl'
       return true if head.content_type =~ /text/
       return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
@@ -141,7 +144,7 @@ module BougyBot
     def filtered_url(wikipedia, youtube)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
-      @head ||= http_head(uri = URI.parse(original))
+      return true if uri.host == 'photos.app.goo.gl'
       return "Some stupid #{head.content_type} that no one cares about" unless head.content_type =~ /text/ && uri.host != 'photos.app.goo.gl'
       return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
       raise 'Why was a filter called?'
