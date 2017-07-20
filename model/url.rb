@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 require 'nokogiri'
 require 'json'
 require 'rest-client'
@@ -21,6 +23,7 @@ module BougyBot
            force: true,
            update_on_create: true
     many_to_one :channel
+    attr_reader :head
 
     def self.find_filtered(args)
       if res = find(original: args[:original], channel_id: args[:channel_id])
@@ -34,7 +37,7 @@ module BougyBot
       end
       nil
     rescue
-      binding.pry if $dance_baby
+      binding.pry if $dance_baby # rubocop:disable Lint/Debugger,Style/GlobalVars
     end
 
     def self.heard(url, name, channel_id)
@@ -55,7 +58,6 @@ module BougyBot
       times > 1
     end
 
-    # rubocop:disable Metrics/AbcSize
     def self.abuser?(nick)
       today = recent 86_400
       soon  = recent 240
@@ -69,7 +71,7 @@ module BougyBot
       self.title = fetch_title unless title
       return @short_title if @short_title
       st = title.size > TLIMIT ? "#{title[0..TLIMIT]}..." : title
-      @short_title = st.gsub(/\n/, ' ').strip
+      @short_title = st.tr("\n", ' ').strip
     end
 
     def ignores
@@ -119,17 +121,46 @@ module BougyBot
       'Screw this untitled link'
     end
 
-    # rubocop:disable Metrics/LineLength
-    # urls are long, mmkay?
-    def fetch_title(wikipedia = true, youtube = true)
+    require 'net/http'
+    def http_head(uri)
+      Net::HTTP.start(uri.host, uri.port, use_ssl: (uri.scheme == 'https')) do |http|
+        http.head(uri.request_uri)
+      end
+    end
+
+    def uri_filtered?(wikipedia, youtube)
+      return true if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
+      return true if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      @head ||= http_head(uri = URI.parse(original))
+      return true if uri.host == 'photos.app.goo.gl'
+      return true if head.content_type =~ /text/
+      return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
+      false
+    end
+
+    def filtered_url(wikipedia, youtube)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      @head ||= http_head(uri = URI.parse(original))
+      return "Some stupid #{head.content_type} that no one cares about" unless head.content_type =~ /text/ && uri.host != 'photos.app.goo.gl'
+      return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
+      raise 'Why was a filter called?'
+    end
+
+    # urls are long, mmkay?
+    def fetch_title(wikipedia = true, youtube = true)
+      return filtered_url(wikipedia, youtube) if url_filtered?(wikipedia, youtube)
       Log.info "Getting #{original}"
-      raw = open(original)
-      doc = Nokogiri(raw.read)
-      title = doc.xpath('/html/head/title')
-      return default_title unless title && title.first
-      title.first.text
+      open(original) do |raw|
+        doc = Nokogiri(raw.read)
+        title = doc.xpath('/html/head/title')
+        return default_title unless title && title.first
+        return title.first.text
+      end
+    rescue => e
+      Log.error e
+      e.backtrace.each { |err| Log.error err }
+      default_title
     end
 
     def youtube_synopsis
@@ -143,7 +174,7 @@ module BougyBot
       video = Yt::Video.new id: vid
       return 'Video Not Found' unless video.exists?
       description = video.description.sub(video.title, '').gsub(/[\r\n]/, ' ').squeeze(' ')
-      description = description.match(/[a-zA-Z]/) ? format(' - %s', description) : ''
+      description = description =~ /[a-zA-Z]/ ? format(' - %s', description) : ''
       format('\'%s\' (%s views)%s', video.title, video.view_count, description)
     rescue
       'Error fetching youtube title'
@@ -155,13 +186,13 @@ module BougyBot
       r = RestClient.get(req,
                          'USER_AGENT' => 'Philosophy IRC Robot. tj@rubyists.com')
 
-      Nokogiri(JSON.parse(r)['parse']['text']['*'].scan(/<p>.*?<\/p>/m).first).text
+      Nokogiri(JSON.parse(r)['parse']['text']['*'].scan(%r{<p>.*?<\/p>}m).first).text
     # rubocop:enable Metrics/LineLength
     rescue
       fetch_title(false)
     end
 
-    def shorten_url # rubocop:disable Metrics/MethodLength
+    def shorten_url
       return original unless original.size > 30
       if BougyBot.options.google[:url_api_key]
         begin
