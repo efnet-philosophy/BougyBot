@@ -20,12 +20,14 @@ module BougyBot
       end
 
       def execute(m)
+        msg = m.message
+        chars = msg.chars
         if m.message =~ /^#{@bot.nick}[:,] /
           spew m if rand < 0.3
-        elsif m.message =~ Regexp.new(Regexp.escape(@bot.nick)) || %w(strewth wave).include?(m.user.nick) || m.message =~ /\b(strewth|wave)\b/
+        elsif m.message =~ Regexp.new(Regexp.escape(@bot.nick))
           return if rand < 0.5
           spew m
-        elsif m.message.each_char.select { |t| t =~ /[A-Z]/ }.count > 10
+        elsif (chars.select { |t| t =~ /[A-Z]/ }.size.to_f / chars.size.to_f) > 0.5
           spew m, true if rand > 0.9
         elsif rand > 0.998
           spew m

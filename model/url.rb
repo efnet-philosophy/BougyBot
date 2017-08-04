@@ -135,17 +135,13 @@ module BougyBot
     def url_filtered?(wikipedia, youtube)
       return true if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return true if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
-      return true if head.content_type =~ /text/
-      return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
       false
     end
 
     def filtered_url(wikipedia, youtube)
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
-      return "Some stupid #{head.content_type} that no one cares about" unless head.content_type =~ /text/ && uri.host != 'photos.app.goo.gl'
-      return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
-      raise 'Why was a filter called?'
+      raise "Why was a filter called? #{original} #{head.content_type}"
     end
 
     def http_fetch_title
@@ -161,6 +157,8 @@ module BougyBot
     def fetch_title(wikipedia = true, youtube = true)
       return http_fetch_title if uri.host == 'photos.app.goo.gl'
       return filtered_url(wikipedia, youtube) if url_filtered?(wikipedia, youtube)
+      return "Some stupid #{head.content_type} that no one cares about" unless head.content_type =~ /text/ && uri.host != 'photos.app.goo.gl'
+      return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
       http_fetch_title
     rescue => e
       Log.error e
