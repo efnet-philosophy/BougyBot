@@ -24,7 +24,7 @@ if BougyBot.options.useful
   require_relative './plugins/title'
   require_relative './plugins/quote'
   require_relative './plugins/notes'
-  require_relative './plugins/vote'
+  require_relative './plugins/votes'
   require_relative './plugins/markov'
   require_relative './plugins/weatherman'
   #require 'cinch-lastactive'
@@ -107,7 +107,7 @@ module BougyBot
                      BougyBot::Plugins::Weatherman,
                      BougyBot::Plugins::Wolfram,
                      BougyBot::Plugins::Notes,
-                     BougyBot::Plugins::Vote,
+                     BougyBot::Plugins::Votes,
                      BougyBot::Plugins::Markov,
                      ::Cinch::Plugins::Convert,
                      ::Google,
