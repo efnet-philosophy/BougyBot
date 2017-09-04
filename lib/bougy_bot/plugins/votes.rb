@@ -86,7 +86,7 @@ module BougyBot
 
       def display_votes(m)
         channel = Channel.find_or_create(name: m.channel.name)
-        votes = channel.votes.select { |v| v.active }
+        votes = channel.votes.select(&:active)
         return m.reply 'No current active questions to vote upon' if votes.count.zero?
         return m.reply votes.first.display if votes.size == 1
         reply_with_nick m, "Sending list of #{votes.size} in pm"
@@ -111,9 +111,10 @@ module BougyBot
         vote = Vote.find(id: id, channel_id: channel.id)
         return reply_with_nick(m, "No vote with id #{id} exists for channel #{channel.name}") unless vote
         nick = m.user.nick
-        voted = vote.responses.detect { |r| (r.by == nick) || (r.mask == m.user.mask) }
+        mask = m.user.mask.split('!', 2).last
+        voted = vote.responses.detect { |r| (r.by == nick) || (r.mask == mask) }
         return reply_with_nick(m, "You already voted on this issue: #{voted.display}") if voted
-        Response.create(vote_id: vote.id, by: m.user.nick, mask: m.user.mask, affirm: yea_or_nay, comment: comment)
+        Response.create(vote_id: vote.id, by: m.user.nick, mask: mask, affirm: yea_or_nay, comment: comment)
         reply_with_nick(m, "Your response to question #{id} has been registered")
       rescue => e
         m.user.send "Error #{e}"
