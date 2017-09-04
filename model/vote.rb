@@ -1,4 +1,4 @@
-# frozen_string_literal: true
+# frozen_string_literal: false
 module BougyBot
   Vote = Class.new Sequel::Model
   # Votes
