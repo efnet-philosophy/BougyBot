@@ -44,7 +44,7 @@ module BougyBot
         if vote = Vote.find(active: true, channel_id: channel.id, id: id)
           vote.deactivate! m.user.nick
           reply_with_nick(m, "Vote #{vote.id} ended:")
-          return vote.display
+          reply_with_nick(m, vote.display)
         else
           reply_with_nick(m, "No active vote found with id #{id} for #{channel.name}")
         end
