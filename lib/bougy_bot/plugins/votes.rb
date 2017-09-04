@@ -86,7 +86,7 @@ module BougyBot
 
       def display_votes(m)
         channel = Channel.find_or_create(name: m.channel.name)
-        votes = channel.votes
+        votes = channel.votes.select { |v| v.active }
         return m.reply 'No current active questions to vote upon' if votes.count.zero?
         return m.reply votes.first.display if votes.size == 1
         reply_with_nick m, "Sending list of #{votes.size} in pm"
