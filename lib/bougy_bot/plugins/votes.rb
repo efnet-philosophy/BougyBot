@@ -111,7 +111,7 @@ module BougyBot
         vote = Vote.find(id: id, channel_id: channel.id)
         return reply_with_nick(m, "No vote with id #{id} exists for channel #{channel.name}") unless vote
         nick = m.user.nick
-        mask = m.user.mask.split('!', 2).last
+        mask = m.user.mask.mask.split('!', 2).last
         voted = vote.responses.detect { |r| (r.by == nick) || (r.mask == mask) }
         return reply_with_nick(m, "You already voted on this issue: #{voted.display}") if voted
         Response.create(vote_id: vote.id, by: m.user.nick, mask: mask, affirm: yea_or_nay, comment: comment)
