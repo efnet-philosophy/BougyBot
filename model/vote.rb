@@ -16,8 +16,8 @@ module BougyBot
     end
 
     def deactivate!(by)
-      active = false
-      deactivated_by = by
+      self.active = false
+      self.deactivated_by = by
       save
       reload
     end
