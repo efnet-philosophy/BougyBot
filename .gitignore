@@ -3,3 +3,7 @@ bot.log
 Gemfile.lock
 config/
 *.log
+data/
+useful.log.*
+markov_dictionary.mmd
+yaml/

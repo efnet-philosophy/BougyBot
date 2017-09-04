@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Bot Namespace
 module BougyBot
   ChanLog = Class.new Sequel::Model
@@ -19,7 +20,7 @@ module BougyBot
     end
 
     def display
-      format('[%s] %s', at.strftime("%Y/%m/%d-%H:%M:%S"), BougyBot.uncommand(message))
+      format('[%s] %s', at.strftime('%Y/%m/%d-%H:%M:%S'), BougyBot.uncommand(message))
     end
   end
 end

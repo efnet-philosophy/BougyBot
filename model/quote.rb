@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'open-uri'
 require 'nokogiri'
 # Bot namespace
@@ -36,7 +37,7 @@ module BougyBot
     def self.author_quotes(string)
       author, *q = string.split
       au_ds = filter(author: /\y#{author}\y/i)
-      au_ds = au_ds.filter(quote: /\y#{q.join(" ")}\y/i) if q.size > 0
+      au_ds = au_ds.filter(quote: /\y#{q.join(" ")}\y/i) unless q.empty?
       (au_ds.all + filter(author: /\y#{string}\y/i).all).compact
     end
 
@@ -90,7 +91,7 @@ module BougyBot
 
     def self.unignored_links(links,  ignore)
       links, ignore = prune_ignores(links, ignore) if ignore
-      [links.sort { rand(10) <=> rand(10) }, ignore] # rubocop:disable Lint/UselessComparison, Metrics/LineLength
+      [links.sort { rand(10) <=> rand(10) }, ignore] # rubocop:disable Lint/UselessComparison
     end
 
     def self.links_to_quotes(links, ignore = nil)
@@ -102,11 +103,10 @@ module BougyBot
       [quotes, ignore]
     end
 
-    # rubocop:disable Metrics/AbcSize
     def self.get_all_for(letter, ignore = nil)
       links, doc = all_authors(letter)
       some, ignore = links_to_quotes(links, ignore)
-      if np = next_page(doc) # rubocop:disable Lint/AssignmentInCondition
+      if np = next_page(doc)
         puts "Next page is #{np}" if BougyBot.options[:debug]
         binding.pry if BougyBot.options[:debugger] # rubocop:disable all
         nl = File.basename np, '.html'
@@ -123,8 +123,8 @@ module BougyBot
       page = BougyBot.html_for_url(link)
       doc = Nokogiri(page)
       author_urls = doc.css('div.bq_s>table')
-                    .first
-                    .css('a').map { |n| n[:href] }
+                       .first
+                       .css('a').map { |n| n[:href] }
       [author_urls, doc]
     end
 
@@ -140,7 +140,6 @@ module BougyBot
       link = "#{BARE}/quotes/authors/%s/%s.html"
       pages = []
       pages << new(format(link, name[0, 1], name), name)
-      # rubocop:disable Lint/AssignmentInCondition
       while npage = pages.last.next_page
         pages << new(File.join(BARE, npage), name)
       end

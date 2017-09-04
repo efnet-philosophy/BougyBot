@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # Bot Namespace
 module BougyBot
   Worklog = Class.new Sequel::Model
@@ -25,7 +26,7 @@ module BougyBot
     end
 
     def log_display
-      format('ID: %s -> [%s] %s', self[:id], at.strftime("%Y/%m/%d-%H:%M:%S"), BougyBot.uncommand(message))
+      format('ID: %s -> [%s] %s', self[:id], at.strftime('%Y/%m/%d-%H:%M:%S'), BougyBot.uncommand(message))
     end
   end
 end

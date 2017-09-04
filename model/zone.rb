@@ -1,13 +1,14 @@
+# frozen_string_literal: true
 require 'timezone'
 Timezone::Lookup.config(:geonames) do |c|
   c.username = 'bougyman'
 end
 
 module BougyBot
-	Zone = Class.new Sequel::Model
-	# Notes, async messages
-	class Zone
-		set_dataset :zones
+  Zone = Class.new Sequel::Model
+  # Notes, async messages
+  class Zone
+    set_dataset :zones
 
     def self.lookup(string)
       case string
@@ -27,5 +28,5 @@ module BougyBot
     def time(t = Time.now)
       timezone.time_with_offset t
     end
-	end
+  end
 end
