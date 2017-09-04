@@ -17,7 +17,7 @@ module BougyBot
 
       match(/^!vote create (.+)/, method: :new_vote, use_prefix: false)
       match(/^!vote end (\d+)$/, method: :end_vote, use_prefix: false)
-      match(/^?votes$/, method: :display_votes, use_prefix: false)
+      match(/^\?votes$/, method: :display_votes, use_prefix: false)
       match(/^!yea (\d+) (.+)$/, method: :yea, use_prefix: false)
       match(/^!yay (\d+) (.*)$/, method: :idjit, use_prefix: false)
       match(/^!nay (\d+) (.+)$/, method: :nay, use_prefix: false)
@@ -69,13 +69,18 @@ module BougyBot
       end
 
       def display_votes(m)
-        channel = Channel.find_or_create(name: m.channel)
+        channel = Channel.find_or_create(name: m.channel.name)
         votes = channel.votes
         return m.reply 'No current active questions to vote upon' if votes.count.zero?
         return m.reply votes.first.display if votes.size == 1
         reply_with_nick m, "Sending list of #{votes.size} in pm"
         votes.each do |vote|
           m.user.send(vote.display)
+        end
+      rescue => e
+        m.user.send "Error displaying votes: #{e}"
+        e.backtrace.each do |err|
+          m.user.send err
         end
       end
 
@@ -86,14 +91,19 @@ module BougyBot
       end
 
       def vote(m, id, yea_or_nay, comment)
-        channel = Channel.find_or_create(name: m.channel)
+        channel = Channel.find_or_create(name: m.channel.name)
         vote = Vote.find(id: id, channel_id: channel.id)
         return reply_with_nick(m, "No vote with id #{id} exists for channel #{channel.name}") unless vote
         nick = m.user.nick
-        voted = vote.responses.detect { |v| v.by == nick || v.mask == m.user.mask }
+        voted = vote.responses.detect { |r| (r.by == nick) || (r.mask == m.user.mask) }
         return reply_with_nick(m, "You already voted on this issue: #{voted.display}") if voted
-        vote.responses << Response.create(by: m.user.nick, mask: m.user.mask, affirm: yea_or_nay, comment: comment)
+        Response.create(vote_id: vote.id, by: m.user.nick, mask: m.user.mask, affirm: yea_or_nay, comment: comment)
         reply_with_nick(m, "Your response to question #{id} has been registered")
+      rescue => e
+        m.user.send "Error #{e}"
+        e.backtrace.each do |err|
+          m.user.send err
+        end
       end
     end
   end

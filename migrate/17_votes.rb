@@ -9,6 +9,7 @@ Sequel.migration do
       String :by, null: false
       String :deactivated_by
       String :question, null: false
+      TrueClass :active, null: false
       foreign_key :channel_id, :channels
     end
     pgt_created_at :votes, :at
