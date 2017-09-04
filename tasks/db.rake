@@ -1,8 +1,7 @@
 # frozen_string_literal: true
-require_relative '../lib/irc_robot'
+require_relative '../lib/bougy_bot'
 # db/init sets DB
 BougyBot::R 'db/init'
-DB = BougyBot::DB
 namespace :db do
   require 'sequel'
   Sequel.extension :migration

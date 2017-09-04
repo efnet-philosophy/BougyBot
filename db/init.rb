@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'sequel'
 require_relative '../lib/bougy_bot'
 DB = Sequel.connect BougyBot.options[:db]
 DB.extension :pg_array
