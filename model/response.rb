@@ -8,5 +8,10 @@ module BougyBot
     def display
       "Affirm: #{affirm} (#{comment} - #{by}) at #{at}"
     end
+
+    def after_create
+      vote.last_voter = by
+      vote.save
+    end
   end
 end
