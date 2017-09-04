@@ -15,6 +15,13 @@ module BougyBot
       display + "\n" + responses.map(&:display).join(', ')
     end
 
+    def deactivate!(by)
+      active = false
+      deactivated_by = by
+      save
+      reload
+    end
+
     private
 
     def affirmations
