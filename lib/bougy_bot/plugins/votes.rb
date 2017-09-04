@@ -18,19 +18,23 @@ module BougyBot
       match(/^!vote create (.+)/, method: :new_vote, use_prefix: false)
       match(/^!vote end (\d+)$/, method: :end_vote, use_prefix: false)
       match(/^\?votes$/, method: :display_votes, use_prefix: false)
+      match(/^\?vote (\d+)$/, method: :display_vote, use_prefix: false)
+      match(/^!yea (\d+)$/, method: :yea, use_prefix: false)
+      match(/^!nay (\d+)$/, method: :nay, use_prefix: false)
       match(/^!yea (\d+) (.+)$/, method: :yea, use_prefix: false)
-      match(/^!yay (\d+) (.*)$/, method: :idjit, use_prefix: false)
       match(/^!nay (\d+) (.+)$/, method: :nay, use_prefix: false)
+      match(/^!yay (\d+)$/, method: :idjit, use_prefix: false)
+      match(/^!yay (\d+) (.*)$/, method: :idjit, use_prefix: false)
 
-      def yea(m, id, comment)
+      def yea(m, id, comment = 'No Comment')
         vote(m, id, true, comment)
       end
 
-      def nay(m, id, comment)
+      def nay(m, id, comment = 'No Comment')
         vote(m, id, false, comment)
       end
 
-      def idjit(m, _id, _comment)
+      def idjit(m, _id, _comment = nil)
         reply_with_nick m, "You're the kind of idjit that spells 'yea' wrong. Own it."
       end
 
@@ -63,6 +67,18 @@ module BougyBot
       rescue => e
         m.user.send 'Error creating vote'
         m.user.send e
+        e.backtrace.each do |err|
+          m.user.send err
+        end
+      end
+
+      def display_vote(m, id)
+        channel = Channel.find_or_create(name: m.channel.name)
+        vote = Vote.find(channel_id: channel.id, id: id)
+        return m.reply "No vote found with id #{id} for #{channel.name}" unless vote
+        reply_with_nick m, vote.display
+      rescue => e
+        m.user.send "Error displaying vote: #{e}"
         e.backtrace.each do |err|
           m.user.send err
         end
