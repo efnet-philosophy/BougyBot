@@ -8,11 +8,13 @@ module BougyBot
     one_to_many :responses
 
     def display
-      "#{id}) #{question} Votes: #{responses.size} Affirms: #{affirmations}, Rejects: #{rejects}, created: #{at}, updated: #{updated}, by: #{by}"
+      s = "#{id}) #{question} Votes: #{responses.size} Affirms: #{affirmations}, Rejects: #{rejects}, created: #{at}, updated: #{updated}, by: #{by}"
+      s << ", Deactivated by #{deactivated_by}" if deactivated_by
+      s << ", Last voter: #{last_voter}" if last_voter
     end
 
     def display_details
-      display + "\n" + responses.map(&:display).join(', ')
+      display + "\n" + responses.map(&:display).join(' - ')
     end
 
     def deactivate!(by)
