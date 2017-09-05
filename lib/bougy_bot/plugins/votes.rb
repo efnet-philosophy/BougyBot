@@ -108,8 +108,8 @@ module BougyBot
 
       def vote(m, id, yea_or_nay, comment)
         channel = Channel.find_or_create(name: m.channel.name)
-        vote = Vote.find(id: id, channel_id: channel.id)
-        return reply_with_nick(m, "No vote with id #{id} exists for channel #{channel.name}") unless vote
+        vote = Vote.find(id: id, active: true, channel_id: channel.id)
+        return reply_with_nick(m, "No vote with id #{id} exists and is active for channel #{channel.name}") unless vote
         nick = m.user.nick
         mask = m.user.mask.mask.split('!', 2).last
         voted = vote.responses.detect { |r| (r.by == nick) || (r.mask == mask) }
