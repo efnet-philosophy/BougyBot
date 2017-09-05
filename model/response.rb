@@ -6,7 +6,7 @@ module BougyBot
     set_dataset :responses
     many_to_one :vote
     def display
-      "Affirm: #{affirm} (#{comment} - #{by}) at #{at}"
+      "#{affirm ? 'Yea!' : 'Nay!'} (#{comment} - #{by}) at #{at}"
     end
 
     def after_create
