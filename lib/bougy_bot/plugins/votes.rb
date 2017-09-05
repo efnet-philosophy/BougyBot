@@ -10,7 +10,7 @@ module BougyBot
   M 'response'
   module Plugins
     # Cinch Plugin to send notes
-    class Votes # rubocop:disable Metrics/ClassLength
+    class Votes
       include Cinch::Plugin
       include Cinch::Extensions::Authentication
       enforce_cooldown
@@ -50,11 +50,7 @@ module BougyBot
           reply_with_nick(m, "No active vote found with id #{id} for #{channel.name}")
         end
       rescue => e
-        m.user.send 'Error ending vote'
-        m.user.send e
-        e.backtrace.each do |err|
-          m.user.send err
-        end
+        rescue_me m, e, 'Error ending vote'
       end
 
       def new_vote(m, message)
@@ -66,11 +62,7 @@ module BougyBot
           m.reply 'Problem saving vote'
         end
       rescue => e
-        m.user.send 'Error creating vote'
-        m.user.send e
-        e.backtrace.each do |err|
-          m.user.send err
-        end
+        rescue_me m, e, 'Error creating vote'
       end
 
       def vote_tally(m, id)
@@ -79,10 +71,7 @@ module BougyBot
         return m.reply "No vote found with id #{id} for #{channel.name}" unless vote
         reply_with_nick m, vote.display_details
       rescue => e
-        m.user.send "Error displaying vote: #{e}"
-        e.backtrace.each do |err|
-          m.user.send err
-        end
+        rescue_me m, e, "Error displaying vote: #{e}"
       end
 
       def display_vote(m, id)
@@ -91,10 +80,7 @@ module BougyBot
         return m.reply "No vote found with id #{id} for #{channel.name}" unless vote
         reply_with_nick m, vote.display
       rescue => e
-        m.user.send "Error displaying vote: #{e}"
-        e.backtrace.each do |err|
-          m.user.send err
-        end
+        rescue_me m, e, "Error displaying vote: #{e}"
       end
 
       def display_votes(m)
@@ -107,13 +93,17 @@ module BougyBot
           m.user.send(vote.display)
         end
       rescue => e
-        m.user.send "Error displaying votes: #{e}"
+        rescue_me m, e, "Error displaying votes: #{e}"
+      end
+
+      private
+
+      def rescue_me(m, e, message)
+        m.user.send message
         e.backtrace.each do |err|
           m.user.send err
         end
       end
-
-      private
 
       def reply_with_nick(m, message)
         m.reply "#{m.user.nick}: #{message}"
@@ -130,10 +120,7 @@ module BougyBot
         Response.create(vote_id: vote.id, by: m.user.nick, mask: mask, affirm: yea_or_nay, comment: comment)
         reply_with_nick(m, "Your response to question #{id} has been registered")
       rescue => e
-        m.user.send "Error #{e}"
-        e.backtrace.each do |err|
-          m.user.send err
-        end
+        rescue_me m, e, "Error #{e}"
       end
     end
   end
