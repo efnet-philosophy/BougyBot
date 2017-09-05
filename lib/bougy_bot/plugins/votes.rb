@@ -10,7 +10,7 @@ module BougyBot
   M 'response'
   module Plugins
     # Cinch Plugin to send notes
-    class Votes
+    class Votes # rubocop:disable Metrics/ClassLength
       include Cinch::Plugin
       include Cinch::Extensions::Authentication
       enforce_cooldown
@@ -19,6 +19,7 @@ module BougyBot
       match(/^!vote end (\d+)$/, method: :end_vote, use_prefix: false)
       match(/^\?votes$/, method: :display_votes, use_prefix: false)
       match(/^\?vote (\d+)$/, method: :display_vote, use_prefix: false)
+      match(/^\?vote -d (\d+)$/, method: :vote_tally, use_prefix: false)
       match(/^!yea (\d+)$/, method: :yea, use_prefix: false)
       match(/^!nay (\d+)$/, method: :nay, use_prefix: false)
       match(/^!yea (\d+) (.+)$/, method: :yea, use_prefix: false)
@@ -67,6 +68,18 @@ module BougyBot
       rescue => e
         m.user.send 'Error creating vote'
         m.user.send e
+        e.backtrace.each do |err|
+          m.user.send err
+        end
+      end
+
+      def vote_tally(m, id)
+        channel = Channel.find_or_create(name: m.channel.name)
+        vote = Vote.find(channel_id: channel.id, id: id)
+        return m.reply "No vote found with id #{id} for #{channel.name}" unless vote
+        reply_with_nick m, vote.display_details
+      rescue => e
+        m.user.send "Error displaying vote: #{e}"
         e.backtrace.each do |err|
           m.user.send err
         end
