@@ -99,6 +99,9 @@ module BougyBot
             m.channel.unban format('*!*@%s', ip)
           end
         end
+      rescue => e
+        m.user.send "Error banning: #{e}"
+        e.backtrace.each { |err| m.user.send err }
       end
 
       def kick(m, msg)
