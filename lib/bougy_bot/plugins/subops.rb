@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'cinch'
 require 'cinch/cooldown'
 require 'ostruct'
@@ -36,6 +37,7 @@ module BougyBot
       match(/(?:kick|battle)[^\s]* (.*)/, method: :kick, group: :subops)
       match(/ban[^\s]* (.*)/, method: :ban, group: :subops)
       match(/dance[^\s]* (.*)/, method: :danceoff, group: :subops)
+      match(/^(\w+):\s+drop a bomb on\s+(.*)?$/, method: :bomb, use_prefix: false)
       enable_authentication
 
       def initialize(*args)
@@ -68,6 +70,11 @@ module BougyBot
             m.channel.kick target, winmsg
           end
         end
+      end
+
+      def bomb(m, me, msg)
+        return unless me == bot.nick
+        ban m, msg
       end
 
       def ban(m, msg) # rubocop:disable all
@@ -111,7 +118,7 @@ module BougyBot
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
-        binding.pry if @chatty
+        binding.pry if @chatty # rubocop:disable Lint/Debugger
         return unless res
         message ||= "Kicked by #{m.user}'s request"
         message << " (#{res.first} > #{res.last})" if res.respond_to? :first
@@ -160,7 +167,7 @@ module BougyBot
           return false
         end
         kicker = m.user
-        auth_user = bot.config.authentication.logged_in.detect { |(k,v)| k ==  kicker }
+        auth_user = bot.config.authentication.logged_in.detect { |(k, _v)| k == kicker }
         kickee = nick_to_user(m.channel, target)
         unless kickee
           if @chatty
@@ -171,7 +178,7 @@ module BougyBot
           return false
         end
         kickee_user = current_user(OpenStruct.new(user: kickee.first))
-        binding.pry if @chatty
+        binding.pry if @chatty # rubocop:disable  Lint/Debugger
         if kickee.last.include?('v') || (kickee_user && kickee_user.level == 'subop')
           m.reply "#{kicker.nick}: Battle initiated with #{target}" if @chatty # rubocop:disable Metrics/LineLength
           return voice_versus_voice(m, kicker, kickee)

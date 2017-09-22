@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 require 'rest-client'
 require 'json'
 require 'cgi'
@@ -20,13 +21,13 @@ module BougyBot
     end
 
     def results
-      return @results if @results.size > 0
+      return @results if @results.size.positive?
       json = fetch
       return @results if json.nil?
       if json['items']
         @results = json['items'].map do |item|
           h = { title: item['title'] }
-          h[:description] = item['snippet'].gsub("\n", '')
+          h[:description] = item['snippet'].delete("\n")
           h[:link]        = Url.google_shortened_url(item['link'])
           h
         end
