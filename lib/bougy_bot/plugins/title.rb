@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+#
 require 'cinch'
 require 'nokogiri'
 require 'open-uri'
@@ -9,7 +11,7 @@ module BougyBot
   module Plugins
     # Title & Url shortening bot
     class Title
-      EXCLUDE_ANNOUNCE = %w(#linuxgeneration)
+      EXCLUDE_ANNOUNCE = %w(#linuxgeneration).freeze
       include Cinch::Plugin
       enforce_cooldown
 
@@ -34,12 +36,14 @@ module BougyBot
       def title_urls(m, channel_id)
         return if EXCLUDE_ANNOUNCE.include? m.channel
         urls = URI.extract(m.message, %w(http https))
+
         if urls.size > 5
           m.reply "Don't be an asshole #{m.user.nick}"
           m.channel.kick m.user.nick
           return
         end
         urls.sort.uniq.each do |u|
+          return m.reply "Don't be a dick, #{m.user.nick}" if u.to_s =~ %r{^https?://$}
           rep = Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
           m.reply rep
         end

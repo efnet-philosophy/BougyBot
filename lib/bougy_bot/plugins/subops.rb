@@ -74,7 +74,18 @@ module BougyBot
 
       def bomb(m, me, msg)
         return unless me == bot.nick
-        ban m, msg
+        nick, rest = msg.split(/\s+/, 2)
+        return unless m.channel.users.keys.detect { |u| u.nick == nick }
+        Timer(3, shots: 1) { m.channel.action "Swoops over #{nick}" }
+        Timer(5, shots: 1) do
+          if rand(10) > 6
+            m.channel.action 'Drops a BIG BAN BOMB'
+            ban m, msg
+          else
+            m.channel.action "Drops a lil' kick bomb"
+            kick m, msg
+          end
+        end
       end
 
       def ban(m, msg) # rubocop:disable all
@@ -118,7 +129,6 @@ module BougyBot
         target, message = msg.split(/\s+/, 2)
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
-        binding.pry if @chatty # rubocop:disable Lint/Debugger
         return unless res
         message ||= "Kicked by #{m.user}'s request"
         message << " (#{res.first} > #{res.last})" if res.respond_to? :first
