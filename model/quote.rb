@@ -44,9 +44,8 @@ module BougyBot
     # return value must respond to #display
     def self.best(query)
       raw_quotes = filter(quote: /\y#{query}\y/).all
-      uquotes = User.quotes_for(query)
       aquotes = author_quotes(query)
-      q = (aquotes + uquotes + raw_quotes).uniq.compact.sample
+      q = (aquotes + raw_quotes).uniq.compact.sample
       q || Dstring.new('No Dice')
     rescue => e
       warn "Wtf in best? #{e}"

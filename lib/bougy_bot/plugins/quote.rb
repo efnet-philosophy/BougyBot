@@ -38,7 +38,6 @@ module BougyBot
       def worklog(m, q = nil)
         user = m.user
         chan = m.channel if m.channel
-        
       end
 
       def working(m, work)

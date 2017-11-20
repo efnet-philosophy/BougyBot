@@ -26,23 +26,18 @@ module BougyBot
     attr_reader :head
 
     def self.find_filtered(args)
-      if res = find(original: args[:original], channel_id: args[:channel_id])
-        return res
-      end
-      u = new(original: args[:original], by: args[:name], channel_id: args[:channel_id])
-      u.short_title
-      title_regex = Regexp.escape(u.title).sub(/\(\d+\\ views/, '([0-9]+ views')
-      if res = find(title: /{#{title_regex}/)
-        return res
-      end
-      nil
+      res = find(original: args[:original], channel_id: args[:channel_id])
+      return res if res
+      url = new(args)
+      res = find(short: url.short_title) if url.short_title
+      return url unless res
+      res
     rescue
       binding.pry if $dance_baby # rubocop:disable Lint/Debugger,Style/GlobalVars
     end
 
     def self.heard(url, name, channel_id)
-      u = find_filtered original: url, channel_id: channel_id, name: name
-      u ||= new(original: url, by: name, channel_id: channel_id)
+      u = find_filtered original: url, channel_id: channel_id, by: name
       u.times ||= 0
       u.times += 1
       u.save
@@ -135,10 +130,12 @@ module BougyBot
     def url_filtered?(wikipedia, youtube)
       return true if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return true if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      return true if uri.host == 'sci-hub.cc'
       false
     end
 
     def filtered_url(wikipedia, youtube)
+      return 'A link to some paper or other science document at the sci-hub sponsored by Moscow' if uri.host == 'sci-hub.cc'
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
       raise "Why was a filter called? #{original} #{head.content_type}"
