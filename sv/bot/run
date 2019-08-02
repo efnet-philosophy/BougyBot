@@ -1,0 +1,7 @@
+#!/bin/bash
+ROOT=~/g/BougyBot
+here=$PWD
+exec 2>&1
+. ~/.rvm/scripts/rvm
+cd $ROOT
+exec chpst -e $here/env ruby ./bot.rb 2>&1

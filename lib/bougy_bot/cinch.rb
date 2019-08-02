@@ -47,8 +47,8 @@ class Google # {{{
   def search(query)
     BougyBot::GoogleSearch.new(query).display
   rescue => e
+    warn "Error: #{e}"
     unless @nopry
-      warn "Error: #{e}"
       require 'pry'
       binding.pry if @pry
     end
@@ -154,6 +154,10 @@ module BougyBot
     def start
       configure unless @configured
       @bot.start
+    rescue EOFError => e
+      $stderr.puts e
+      e.backtrace.each { |d| $stderr.puts "\t#{d}" }
+      exit 69
     end
   end
 end

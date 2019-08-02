@@ -1,10 +1,10 @@
 # frozen_string_literal: true
-require 'rest-client'
+require 'httparty'
 require 'json'
 require 'cgi'
 module BougyBot
   class GoogleSearch
-    attr_accessor :google_api_key
+    attr_accessor :google_api_key, :csn
     def initialize(q, google_api_key = BougyBot.options.google.url_api_key)
       @results        = []
       @q              = q
@@ -25,10 +25,10 @@ module BougyBot
       json = fetch
       return @results if json.nil?
       if json['items']
-        @results = json['items'].map do |item|
+        @results = json['items'][0 .. 1].map do |item|
           h = { title: item['title'] }
           h[:description] = item['snippet'].delete("\n")
-          h[:link]        = Url.google_shortened_url(item['link'])
+          h[:link]        = (Url.tinyurl_shortened_url(item['link']) rescue item['link'])
           h
         end
       else
@@ -46,9 +46,9 @@ module BougyBot
     end
 
     def fetch
-      res = ::RestClient.get(url)
+      res = ::HTTParty.get(url)
       return nil unless res
-      JSON.parse(res.to_s)
+      res
     end
   end
 end

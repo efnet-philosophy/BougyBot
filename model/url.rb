@@ -158,6 +158,7 @@ module BougyBot
       return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
       http_fetch_title
     rescue => e
+      info e
       Log.error e
       e.backtrace.each { |err| Log.error err }
       default_title

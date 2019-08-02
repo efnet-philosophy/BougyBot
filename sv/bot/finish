@@ -1,0 +1,11 @@
+#!/bin/sh
+echo $1 > theone
+cd /home/bougyman/g/BougyBot
+if [ $1 -eq 0 ];then
+  cp markov_dictionary.mmd markov_dictionary.mmd.$(date +%s)
+elif [ $1 -eq -1 ];then
+  cp markov_dictionary.mmd markov_dictionary.mmd.$(date +%s)
+else
+  newest=$(ls -t markov_dictionary.mmd.*|head -1)
+  cp $newest markov_dictionary.mmd
+fi
