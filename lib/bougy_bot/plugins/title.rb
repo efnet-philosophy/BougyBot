@@ -35,6 +35,10 @@ module BougyBot
 
       def title_urls(m, channel_id)
         return if EXCLUDE_ANNOUNCE.include? m.channel
+        if @abuse[m.user.nick] && Time.now - @abuse[m.user.nick] < 60
+          @abuse.delete m.user.nick
+          m.channel.kick(m.user.nick, '> 1 link per minute is not allowed')
+        end
         urls = URI.extract(m.message, %w(http https))
 
         if urls.size > 5
@@ -44,8 +48,10 @@ module BougyBot
         end
         urls.sort.uniq.each do |u|
           return m.reply "Don't be a dick, #{m.user.nick}" if u.to_s =~ %r{^https?://$}
-          rep = Url.heard(u, m.user.nick, channel_id).display_for(m.user.nick)
-          m.reply rep
+          rep = Url.heard(u, m.user.nick, channel_id)
+          m.channel.kick(m.user.nick, 'Oversharing') if rep.times > 2
+          @abuse[m.user.nick] = Time.now
+          m.reply rep.display_for(m.user.nick)
         end
       end
     end

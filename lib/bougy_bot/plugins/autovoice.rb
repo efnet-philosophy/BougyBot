@@ -54,7 +54,11 @@ module BougyBot
         user = m.user
         return if user.nick == bot.nick
         if @autovoice
-          m.channel.voice(user.nick)
+          nick = user.nick
+          time = 30
+          time = 120 if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
+          warn "Setting voice timer for #{nick} (#{user.mask} to #{time}"
+          Timer.new(time, shots: 1) { m.channel.voice(nick) }
         else
           return unless m.channel.name == '#philosophy'
           # m.user.msg 'Hey, we are moderated because dionysus is an asshat. If you want voice, ask in #pho:'
