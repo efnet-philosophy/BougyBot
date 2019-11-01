@@ -27,6 +27,8 @@ module BougyBot
       match(/devoice ([^\s]*)$/, method: :devoice)
       match(/\+m$/, method: :moderate)
       match(/\-m$/, method: :unmoderate)
+      match(/\+t$/, method: :lock_topic)
+      match(/\-t$/, method: :unlock_topic)
       enable_authentication
 
       def initialize(*args)
@@ -101,6 +103,20 @@ module BougyBot
       def unmoderate(m)
         return unless authenticated?(m, [:subops, :admins])
         m.channel.mode('-m')
+      rescue => e
+        m.reply "Error: #{e}"
+      end
+
+      def lock_topic(m)
+        return unless authenticated?(m, [:subops, :admins])
+        m.channel.mode('+t')
+      rescue => e
+        m.reply "Error: #{e}"
+      end
+
+      def unlock_topic(m)
+        return unless authenticated?(m, [:subops, :admins])
+        m.channel.mode('-t')
       rescue => e
         m.reply "Error: #{e}"
       end

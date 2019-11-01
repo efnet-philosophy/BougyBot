@@ -98,10 +98,10 @@ module BougyBot
         if res.respond_to? :last
           message ||= "Kicking by #{m.user}'s request: "
           if res.first > res.last
-            message << " No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})"
+            message = "#{messsage} No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})"
             m.channel.kick target, message
           else
-            message << " No banning of subops, #{m.user.nick}, you loser -> (#{res.last} > #{res.first})"
+            message = "#{message} No banning of subops, #{m.user.nick}, you loser -> (#{res.last} > #{res.first})"
             m.channel.kick m.user.nick, message
           end
         else
@@ -178,6 +178,9 @@ module BougyBot
         end
         kicker = m.user
         auth_user = bot.config.authentication.logged_in.detect { |(k, _v)| k == kicker }
+        return false unless auth_user
+        return true if kicker.nick == 'xartet'
+
         kickee = nick_to_user(m.channel, target)
         unless kickee
           if @chatty

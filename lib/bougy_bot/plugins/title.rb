@@ -12,10 +12,13 @@ module BougyBot
     # Title & Url shortening bot
     class Title
       EXCLUDE_ANNOUNCE = %w(#linuxgeneration).freeze
+      OVERSHARING_LIMIT = 5
       include Cinch::Plugin
+      include Cinch::Extensions::Authentication
       enforce_cooldown
 
       listen_to :channel
+      match(/^!share_limit (\d+) (.*)$/, method: :share_limit!, use_prefix: false)
       def initialize(*args)
         @abuse = {}
         super
@@ -32,15 +35,29 @@ module BougyBot
       def do_log(m)
         ChanLog.heard m.channel, m.user, m.message
       end
+      
+      def share_limit
+        @share_limit ||= Hash.new(OVERSHARING_LIMIT)
+      end
+
+      def share_limit!(m, limit, url)
+        return unless authenticated?(m, [:subops, :admins])
+
+        share_limit[url] = limit.to_i
+        m.reply "New limit for #{url}: #{share_limit[url]}"
+      end
 
       def title_urls(m, channel_id)
         return if EXCLUDE_ANNOUNCE.include? m.channel
+        return if m.message =~ /^!/
+
+        urls = URI.extract(m.message, %w(http https))
+        return if urls.empty?
+
         if @abuse[m.user.nick] && Time.now - @abuse[m.user.nick] < 60
           @abuse.delete m.user.nick
           m.channel.kick(m.user.nick, '> 1 link per minute is not allowed')
         end
-        urls = URI.extract(m.message, %w(http https))
-
         if urls.size > 5
           m.reply "Don't be an asshole #{m.user.nick}"
           m.channel.kick m.user.nick
@@ -49,7 +66,8 @@ module BougyBot
         urls.sort.uniq.each do |u|
           return m.reply "Don't be a dick, #{m.user.nick}" if u.to_s =~ %r{^https?://$}
           rep = Url.heard(u, m.user.nick, channel_id)
-          m.channel.kick(m.user.nick, 'Oversharing') if rep.times > 2
+          m.channel.kick(m.user.nick,
+                         "Oversharing. This has been shared > #{share_limit[u.to_s]} times") if rep.times > share_limit[u.to_s]
           @abuse[m.user.nick] = Time.now
           m.reply rep.display_for(m.user.nick)
         end

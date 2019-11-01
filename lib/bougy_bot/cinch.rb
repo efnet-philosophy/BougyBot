@@ -18,7 +18,7 @@ if BougyBot.options.useful
   require 'cinch/plugins/fortune'
   require 'cinch/plugins/wikipedia'
   require 'cinch/plugins/news'
-  require 'cinch-urbandict'
+#  require 'cinch-urbandict'
   require_relative './plugins/topiclock'
   require_relative './plugins/subops'
   require_relative './plugins/title'
@@ -98,7 +98,6 @@ module BougyBot
                      BougyBot::Plugins::Topiclock,
                      ::Cinch::Plugins::News,
                      ::Cinch::Plugins::Wikipedia,
-                     ::Cinch::Plugins::UrbanDict,
                      ::Cinch::Plugins::Dicebag,
                      BougyBot::Plugins::Autovoice,
                      BougyBot::Plugins::Times,
@@ -114,6 +113,7 @@ module BougyBot
                      ::Cinch::Plugins::Fortune,
                      ::Cinch::Plugins::Seen,
                      BougyBot::Plugins::QuoteR]
+                     #::Cinch::Plugins::UrbanDict,
       end
       @plugins
     end
@@ -137,7 +137,7 @@ module BougyBot
           BougyBot::User.register nick, pass
         end
         c.authentication.fetch_user = lambda do |nick|
-          BougyBot::User.find nick: nick, approved: true
+          BougyBot::User.find(nick: nick, approved: true)
         end
         c.authentication.admins =  lambda { |user| user.level.to_sym == :admin }
         c.authentication.subops =  lambda { |user| user.level.to_sym == :subop }

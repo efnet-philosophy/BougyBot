@@ -19,7 +19,8 @@ module BougyBot
 
 			def make_note(m, user, message)
         return m.reply "You don't have to send me a message, I'm right here, idiot" if user == @bot.nick
-        known_user = User.find(Sequel.or(nick: /#{user}/i, mask: /!#{user}@/i))
+        escaped = Regexp.escape user
+        known_user = User.find(Sequel.or(nick: /#{escaped}/i, mask: /!#{escaped}@/i))
         return m.reply "I don't know anyone named #{user}" unless known_user
         return m.reply "You can't do that without being logged in, brah. See http://tinyurl.com/efnetphilo-register" unless authenticated? m
         if note = Note.create(from: m.user.mask.to_s, to: user.downcase, message: message) # rubocop:disable Lint/AssignmentInCondition,Metrics/LineLength
