@@ -52,7 +52,6 @@ class OpenWeather
     sys = OpenStruct.new weather.sys
     wind = OpenStruct.new weather.wind
     conditions = weather.weather
-    binding.pry
     tpl.result(binding).chomp
   end
 
