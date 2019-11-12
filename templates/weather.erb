@@ -1,0 +1,1 @@
+It's currently <%= main.temp %>F in <%= weather.name %> with a humidity of <%= main.humidity %>%. Pressure <%= main.pressure %> millibars. Wind from the <%= OpenWeather.direction_from_degree(wind.deg) %> at <%= wind.speed %>mph<% if wind.gust %> gusting to <%= wind.gust %>mpg<% end %>. Generally <%= conditions.map { |d| d['description'] }.map(&:chomp).join(', ') %>.
