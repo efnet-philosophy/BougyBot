@@ -18,7 +18,7 @@ if BougyBot.options.useful
   require 'cinch/plugins/fortune'
   require 'cinch/plugins/wikipedia'
   require 'cinch/plugins/news'
-#  require 'cinch-urbandict'
+  require 'cinch-urbandict'
   require_relative './plugins/topiclock'
   require_relative './plugins/subops'
   require_relative './plugins/title'
@@ -112,8 +112,8 @@ module BougyBot
                      ::Google,
                      ::Cinch::Plugins::Fortune,
                      ::Cinch::Plugins::Seen,
+                     ::Cinch::Plugins::UrbanDict,
                      BougyBot::Plugins::QuoteR]
-                     #::Cinch::Plugins::UrbanDict,
       end
       @plugins
     end
