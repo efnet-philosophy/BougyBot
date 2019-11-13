@@ -3,10 +3,11 @@
 require 'httparty'
 require 'ostruct'
 require 'pathname'
+require_relative '../bougy_bot'
 class OpenWeather
   include HTTParty
   base_uri 'https://api.openweathermap.org/data/2.5'
-  TEMPLATE_PATH = Pathname('templates')
+  TEMPLATE_PATH = BougyBot::ROOT / :templates
   DIRECTIONS = {
     0..5 => :north,
     6..39 => :north_north_west,
@@ -26,7 +27,37 @@ class OpenWeather
     321..354 => :north_north_east,
     355..360 => :north
   }.freeze
+  DEFAULT_UNIT = { pressure: 'hPa', distance: 'meters', speed: 'meter/sec' }.freeze
+  UNITS = {
+    'imperial' => OpenStruct.new(DEFAULT_UNIT.merge(temp: 'F', distance: 'feet', speed: 'mph')),
+    'metric'   => OpenStruct.new(DEFAULT_UNIT.merge(temp: 'C')),
+    'Standard' => OpenStruct.new(DEFAULT_UNIT.merge(temp: 'Kelvin')),
+  }.freeze
+  TEMP_EXCLAMATIONS = {
+    'imperial' => {
+      -100..-20 => 'So fucking cold your breath will freeze your lungs',
+      -20..0    => 'Colder than a witches tit',
+      0..32     => 'Freeze your tits off',
+      32..40    => 'Nipple-hardening cold',
+      41..50    => 'A litle chilly. Grab a sweater',
+      50..60    => 'Mild, on the chill side',
+      60..70    => 'Pefectly Mild',
+      70..80    => 'Absolutely Beautiful',
+      80..90    => 'Shorts & T-shirt weather',
+      90..100   => 'Heating up pretty solidly. Pets come inside',
+      100..110  => 'Hot as fuck',
+      110..120  => "Approaching Satan's Comfort Level",
+      120..130  => 'Too hot for teacher',
+      (130..)   => 'Literally in flames'
+    }
+  }.freeze
+
+  def self.display_for_zip(zip)
+    new(BougyBot.options.open_weather_key, units: 'imperial').display_for_zip zip
+  end
+
   def self.direction_from_degree(degree)
+    return 'Nowhere' unless degree
     raise "Degree '#{degree}' must be between 0 and 360" unless (0..360).cover? degree
 
     dir = DIRECTIONS[DIRECTIONS.keys.detect { |k| k.cover? degree }]
@@ -52,7 +83,15 @@ class OpenWeather
     sys = OpenStruct.new weather.sys
     wind = OpenStruct.new weather.wind
     conditions = weather.weather
+    unit = UNITS[options[:query][:units]]
     tpl.result(binding).chomp
+  end
+
+  def temp_exclamation(temp)
+    te = TEMP_EXCLAMATIONS[options[:query][:units]]
+    return '' unless te
+
+    te[te.keys.detect { |k| k.cover? temp }]
   end
 
   def forecast_by_zip(zip)

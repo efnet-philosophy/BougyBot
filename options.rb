@@ -8,6 +8,7 @@ module BougyBot
                        channels: [],
                        server: 'irc.efnet.org',
                        google: { url_api_key: nil },
+                       open_weather_key: nil,
                        wolfram_key: nil,
                        logfile: $stdout }
 
@@ -72,5 +73,7 @@ module BougyBot
     end
 
     o 'Wolfram', :wolfram_key, BougyBot.options.wolfram_key || loaded_options[:wolfram_key]
+
+    o 'Open Weather', :open_weather_key, BougyBot.options.open_weather_key || loaded_options[:open_weather_key]
   end
 end

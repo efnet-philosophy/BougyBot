@@ -5,6 +5,7 @@ require 'time-lord'
 require 'weather-underground'
 
 module BougyBot
+  L 'open_weather'
   module Plugins
     # Cinch Plugin to report weather
     class Weatherman
@@ -12,7 +13,7 @@ module BougyBot
 
       enforce_cooldown
 
-      self.help = 'Use .w <location> to see information on the weather.'
+      self.help = 'Use .w <zip> to see information on the weather.'
 
       def initialize(*args)
         super
@@ -24,15 +25,20 @@ module BougyBot
           end
       end
 
-      match(/(?:w|weather) (.+)/, method: :weather)
+      match(/(?:zw|zweather) (.+)/, method: :weather)
       match(/forecast (.+)/,      method: :forecast)
 
       def weather(m, query)
-        m.reply get_weather(query)
+        if (zip = query.match(/\b\d{5,6}(?:\s*,\s*\w\w)?\b|\w\w\w \w\w\w/))
+          z = zip[0].match?(/\w\w\w \w\w\w/) ? "#{zip[0].split.first},ca" : zip[0]
+          m.reply OpenWeather.display_for_zip(z)&.tr("\n", ' ')
+        else
+          m.reply "Weather currently only supports ZIP or ZIP,XX, where XX is the country code"
+        end
       end
 
       def forecast(m, query)
-        m.reply get_forecast(query)
+        m.reply 'Sorry, No forecasting available yet (WIP)'
       end
 
       private

@@ -5,5 +5,5 @@ config/
 *.log
 data/
 useful.log.*
-markov_dictionary.mmd
+markov_dictionary.mmd*
 yaml/
