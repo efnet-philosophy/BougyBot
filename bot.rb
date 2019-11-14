@@ -28,10 +28,5 @@ end
 if $PROGRAM_NAME == __FILE__
   require 'pry'
   u = useful
-#  Thread.new do |t|
-#    Kernel.loop do
-#      binding.pry_remote # rubocop:disable Lint/Debugger
-#    end
-#  end
   u.start
 end

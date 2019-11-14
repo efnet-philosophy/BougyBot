@@ -25,15 +25,20 @@ module BougyBot
           end
       end
 
-      match(/(?:zw|zweather) (.+)/, method: :weather)
-      match(/forecast (.+)/,      method: :forecast)
+      match(/(?:wz|zweather) (.+)/, method: :zweather)
+      match(/(?:wq|qweather) (.+)/, method: :qweather)
+      # match(/forecast (.+)/,      method: :forecast)
 
-      def weather(m, query)
+      def qweather(m, query)
+        m.reply OpenWeather.display_for_query(query)&.tr("\n", ' ')
+      end
+
+      def zweather(m, query)
         if (zip = query.match(/\b\d{5,6}(?:\s*,\s*\w\w)?\b|\w\w\w \w\w\w/))
           z = zip[0].match?(/\w\w\w \w\w\w/) ? "#{zip[0].split.first},ca" : zip[0]
           m.reply OpenWeather.display_for_zip(z)&.tr("\n", ' ')
         else
-          m.reply "Weather currently only supports ZIP or ZIP,XX, where XX is the country code"
+          m.reply OpenWeather.display_for_zip(query)&.tr("\n", ' ')
         end
       end
 

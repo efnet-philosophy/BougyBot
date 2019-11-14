@@ -4,4 +4,5 @@ here=$PWD
 exec 2>&1
 . ~/.rvm/scripts/rvm
 cd $ROOT
+rvm use $(<.ruby-version)@$(<.ruby-gemset)
 exec chpst -e $here/env ruby ./bot.rb 2>&1
