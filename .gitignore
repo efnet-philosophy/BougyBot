@@ -7,3 +7,7 @@ data/
 useful.log.*
 markov_dictionary.mmd*
 yaml/
+sv/bot/log/@*
+sv/bot/log/current
+sv/**/supervise
+sv/**/lock
