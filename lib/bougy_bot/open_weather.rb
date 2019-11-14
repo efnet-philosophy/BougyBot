@@ -103,16 +103,31 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
 
   def display(weather)
     tpl = ERB.new(File.read(TEMPLATE_PATH.join('weather.erb')))
-    main = OpenStruct.new weather.main
+    main = OpenStruct.new(weather.main)
+    temp = main.temp
     sys = OpenStruct.new weather.sys
     wind = OpenStruct.new weather.wind
-    conditions = weather.weather
     unit = UNITS[options[:query][:units]]
+    name = sane_name(weather, main.name)
+    tpl.result(binding).chomp
+  end
+
+  def sane_name(weather, name)
     region, country = BougyBot::Zone.lookup_latlon(*weather.coord.values_at('lat', 'lon')).to_h.values_at(
       :name,
       :country
     )
-    tpl.result(binding).chomp
+    if name.nil?
+      region = 'Nowhere' if region.nil?
+      return country if region == country
+      return region if country.nil?
+
+      "#{region}, #{country}"
+    else
+      return "#{name}, #{country}" if name == region
+
+      "#{name}, #{region}, #{country}"
+    end
   end
 
   def display_for_query(query)
