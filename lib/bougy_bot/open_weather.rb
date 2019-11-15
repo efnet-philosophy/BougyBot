@@ -37,13 +37,16 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
   }.freeze
   TEMP_EXCLAMATIONS = {
     'imperial' => {
-      -100..-20 => 'So fucking cold just breathing will freeze your lungs',
+      -100..-40 => 'As if you landed on Uranus. No heat whatsoever',
+      -40..-20  => 'So fucking cold just breathing will freeze your lungs',
       -20..0    => 'Freezing your pee before it hits the ground COLD',
-      0..15     => 'Colder than a witches tit',
-      15..25    => 'Freeze your tits off cold',
-      25..29    => 'Coors Light Optimum Temperature',
-      29..32    => 'A cunt hair shy of freezing',
-      32..40    => 'Nipple-hardening cold',
+      0..15     => 'Colder than a witches tit. Stay inside.',
+      15..25    => 'Freeze your tits off cold. Layers!',
+      25..29    => 'Coors Light Optimum Temperature. Bundle up.',
+      29..32    => 'A cunt hair below freezing',
+      32..32    => 'Exactly: Freezing',
+      32..34    => 'A cunt hair shy of freezing. Check your faucets!',
+      34..40    => 'Cold as fuck. Grab a jacket',
       40..50    => 'A litle chilly. Grab a sweater',
       50..60    => 'Mild, on the chill side',
       60..70    => 'Perfectly Mild',
@@ -82,6 +85,18 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
 
   def weather_by_zip(zip)
     q = @options.dup
+    zip, code = zip.split(/\s*,\s*/)
+    match = if code
+              BougyBot::Zone.find(zip: zip, country_code: code)
+            else
+              BougyBot::Zone.find(zip: zip, country_code: 'US')
+            end
+    if match
+      q[:query][:lat] = match.latitude
+      q[:query][:lon] = match.longitude
+      return self.class.get('/weather', q) if match
+    end
+
     q[:query][:zip] = zip
     self.class.get '/weather', q
   end
@@ -108,23 +123,25 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
     sys = OpenStruct.new weather.sys
     wind = OpenStruct.new weather.wind
     unit = UNITS[options[:query][:units]]
-    name = sane_name(weather, main.name)
+    name = sane_name(weather)
     tpl.result(binding).chomp
   end
 
-  def sane_name(weather, name)
+  def sane_name(weather)
+    name = weather.name
     region, country = BougyBot::Zone.lookup_latlon(*weather.coord.values_at('lat', 'lon')).to_h.values_at(
       :name,
       :country
     )
-    if name.nil?
+    if name.empty?
       region = 'Nowhere' if region.nil?
       return country if region == country
       return region if country.nil?
 
       "#{region}, #{country}"
     else
-      return "#{name}, #{country}" if name == region
+      return country.to_s if name == country && (region.empty? || region == country)
+      return "#{name}, #{country}" if name == region || region == country
 
       "#{name}, #{region}, #{country}"
     end
@@ -132,6 +149,7 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
 
   def display_for_query(query)
     weather = weather_by_query query
+    weather['name'] = query if weather['name'].nil? || weather['name'].empty?
     return weather['message'] if weather['cod'] == '404'
 
     display OpenStruct.new(weather)
@@ -139,6 +157,7 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
 
   def display_for_zip(zip)
     weather = weather_by_zip zip
+    weather['name'] = zip if weather['name'].nil? || weather['name'].empty?
     return weather['message'] if weather['cod'] == '404'
 
     display OpenStruct.new(weather)

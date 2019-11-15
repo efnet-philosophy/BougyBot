@@ -1,4 +1,4 @@
-It's currently '<%= temp_exclamation(temp) %>' (<%= temp %><%= unit.temp %>) in <%= name %> with <%= main.humidity %>% humidity.
+It's currently <%= temp_exclamation(temp) %> (<%= temp %><%= unit.temp %>) in <%= name %> with <%= main.humidity %>% humidity.
 Pressure is <%= main.pressure %> <%= unit.pressure %>.
 <% if weather.visibility %>Visibility of <%= weather.visibility %> <%= unit.distance %>.<% else %>Zero Visibility!<% end %>
 Wind from the <%= OpenWeather.direction_from_degree(wind.deg) %> at <%= wind.speed %> <%= unit.speed %><% if wind.gust %> gusting to <%= wind.gust %><% end %>.

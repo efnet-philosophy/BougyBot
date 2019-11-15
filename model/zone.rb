@@ -23,10 +23,29 @@ module BougyBot
       end
     end
 
+    def self.states
+      @states ||= DB[:admin1_us].with_sql('select distinct(state_code) from admin1_us').all.map do |s|
+        s[:state_code]
+      end
+    end
+
     def self.lookup_city(city, country = nil)
-      return find(city: /#{city}/i) if country.nil?
+      if city.match?(/^[a-zA-Z]{3}$/)
+        match = find aircode: city.upcase
+        return match if match
+      end
+
+      if country.nil?
+        match = find(city: /#{city}/i)
+        match ||= lookup city
+        return match
+      end
 
       country.upcase!
+      if states.include? country
+        match = find city: /#{city}/i, state_code: country
+        return match if match
+      end
       raise "#{country} is not a valid country code" unless find(country: country)
 
       find(city: /#{city}/i, country: country)
