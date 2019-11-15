@@ -40,7 +40,7 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
       -100..-40 => 'As if you landed on Uranus. No heat whatsoever',
       -40..-20  => 'So fucking cold just breathing will freeze your lungs',
       -20..0    => 'Freezing your pee before it hits the ground COLD',
-      0..15     => 'Colder than a witches tit. Stay inside.',
+      0..15     => "Colder than a witch's tit. Stay inside.",
       15..25    => 'Freeze your tits off cold. Layers!',
       25..29    => 'Coors Light Optimum Temperature. Bundle up.',
       29..32    => 'A cunt hair below freezing',
@@ -68,6 +68,10 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
     new(BougyBot.options.open_weather_key, units: 'imperial').display_for_query query
   end
 
+  def self.display_for_zone(zone)
+    new(BougyBot.options.open_weather_key, units: 'imperial').display_for_zone zone
+  end
+
   def self.direction_from_degree(degree)
     return 'Void' unless degree
     raise "Degree '#{degree}' must be between 0 and 360" unless (0..360).cover? degree
@@ -79,23 +83,16 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
   end
 
   attr_reader :options
-  def initialize(api_key, units: 'metric', lang: 'en_us')
+  attr_accessor :zone
+  def initialize(api_key, units: 'metric', lang: 'en_us', zone: nil)
+    @zone = zone
     @options = { query: { APPID: api_key, units: units, lang: lang } }
   end
 
   def weather_by_zip(zip)
     q = @options.dup
-    zip, code = zip.split(/\s*,\s*/)
-    match = if code
-              BougyBot::Zone.find(zip: zip, country_code: code)
-            else
-              BougyBot::Zone.find(zip: zip, country_code: 'US')
-            end
-    if match
-      q[:query][:lat] = match.latitude
-      q[:query][:lon] = match.longitude
-      return self.class.get('/weather', q) if match
-    end
+    @zone = BougyBot::Zone.find_by_zip(*zip.split(/\s*,\s*/))
+    return weather_for_zone(zone) if zone
 
     q[:query][:zip] = zip
     self.class.get '/weather', q
@@ -103,17 +100,30 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
 
   def weather_by_query(query)
     city, country = query.split(/\s*,\s*/)
-    zone = BougyBot::Zone.lookup_city city, country
+    @zone ||= BougyBot::Zone.lookup_city city, country
     return({ 'cod' => '404', 'message' => "Nothing found for #{query}" }) unless zone
 
+    weather_for_zone(zon)
+  end
+
+  def weather_by_id(id)
     q = @options.dup
-    if zone.name.match(/^\d+$/)
-      q[:query][:id] = zone.name
-    else
-      q[:query][:lat] = zone.latitude
-      q[:query][:lon] = zone.longitude
-    end
+    q[:query][:id] = id
     self.class.get '/weather', q
+  end
+
+  def weather_by_latlong(lat, lon)
+    q = @options.dup
+    q[:query][:lat] = lat
+    q[:query][:lon] = lon
+    self.class.get '/weather', q
+  end
+
+  def weather_for_zone(zon)
+    @zone = zon
+    return weather_by_id(zone.name) if zone.name.match?(/^\d+$/)
+
+    weather_by_latlong(zone.latitude, zone.longitude)
   end
 
   def display(weather)
@@ -123,28 +133,15 @@ class OpenWeather # rubocop:disable Metrics/ClassLength
     sys = OpenStruct.new weather.sys
     wind = OpenStruct.new weather.wind
     unit = UNITS[options[:query][:units]]
-    name = sane_name(weather)
+    @zone ||= BougyBot::Zone.lookup_latlon(*weather.coord.values_at('lat', 'lon'))
     tpl.result(binding).chomp
   end
 
-  def sane_name(weather)
-    name = weather.name
-    region, country = BougyBot::Zone.lookup_latlon(*weather.coord.values_at('lat', 'lon')).to_h.values_at(
-      :name,
-      :country
-    )
-    if name.empty?
-      region = 'Nowhere' if region.nil?
-      return country if region == country
-      return region if country.nil?
+  def display_for_zone(zon)
+    weather = weather_for_zone zon
+    return weather['message'] if weather['cod'] == '404'
 
-      "#{region}, #{country}"
-    else
-      return country.to_s if name == country && (region.empty? || region == country)
-      return "#{name}, #{country}" if name == region || region == country
-
-      "#{name}, #{region}, #{country}"
-    end
+    display OpenStruct.new(weather)
   end
 
   def display_for_query(query)

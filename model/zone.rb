@@ -29,26 +29,41 @@ module BougyBot
       end
     end
 
+    def self.countries
+      @countries ||= JSON.parse(File.read(ROOT.join('data/countries.json'))).each_with_object({}) do |ent, hash|
+        hash[ent['Code']] = ent['Name']
+      end
+    end
+
     def self.lookup_city(city, country = nil)
       if city.match?(/^[a-zA-Z]{3}$/)
         match = find aircode: city.upcase
         return match if match
       end
 
+      if city.match?(/^[a-zA-Z]{4}$/)
+        match = find weather_code: city.upcase
+        return match if match
+      end
+
       if country.nil?
-        match = find(city: /#{city}/i)
+        match = find(Sequel.|(city: /#{city}/i, name: /#{city}/i))
         match ||= lookup city
         return match
       end
 
       country.upcase!
       if states.include? country
-        match = find city: /#{city}/i, region_code: country
+        match = find(Sequel.&(Sequel.|(city: /#{city}/i, name: /#{city}/i), region_code: country))
         return match if match
       end
-      raise "#{country} is not a valid country code" unless find(country: country)
+      raise "#{country} is not a valid country code" unless countries.keys.include? country
 
-      find(city: /#{city}/i, country: country)
+      find(Sequel.&(Sequel.|(city: /#{city}/i, name: /#{city}/i), country_code: country))
+    end
+
+    def self.find_by_zip(zip, code = 'US')
+      find(zip: /^#{zip}/, country_code: code)
     end
 
     def self.lookup_latlon(lat, lon)
@@ -70,6 +85,41 @@ module BougyBot
       return iso if %w[USA RU].include? iso
 
       country
+    end
+
+    def friendly_city
+      if city.nil?
+        return name unless name.match(/^\d+$/)
+
+        return 'Nowhere'
+      end
+      return name if name == city
+
+      "#{name}, #{city}"
+    end
+
+    def friendly_region
+      if region.nil?
+        return principality unless principality.nil?
+
+        return nil
+      end
+      region unless region == city || region == country
+    end
+
+    def friendly_country
+      if country.nil?
+        return country_code unless country_code.nil?
+
+        return 'Nowhereland'
+      end
+      return nil if country == friendly_city
+
+      country
+    end
+
+    def full_name
+      [friendly_city, friendly_region, friendly_country].compact.join(', ')
     end
 
     def timezone
