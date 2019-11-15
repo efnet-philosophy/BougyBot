@@ -43,7 +43,7 @@ module BougyBot
 
       country.upcase!
       if states.include? country
-        match = find city: /#{city}/i, state_code: country
+        match = find city: /#{city}/i, region_code: country
         return match if match
       end
       raise "#{country} is not a valid country code" unless find(country: country)
