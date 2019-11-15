@@ -10,8 +10,8 @@ Sequel.migration do
       String :country, null: false
       String :aircode
       String :weather_code
-      String :longitude
-      String :latitude
+      Float :longitude
+      Float :latitude
     end
     pgt_created_at :zones, :at
     pgt_updated_at :zones, :updated
