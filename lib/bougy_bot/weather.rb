@@ -35,41 +35,30 @@ module BougyBot
       'metric'   => OpenStruct.new(DEFAULT_UNIT.merge(temp: 'C')),
       'Standard' => OpenStruct.new(DEFAULT_UNIT.merge(temp: 'Kelvin'))
     }.freeze
-    TEMP_EXCLAMATIONS = {
-      'imperial' => {
-        -100..-40 => 'As if you landed on Uranus. No heat whatsoever',
-        -40..-20  => 'So fucking cold just breathing will freeze your lungs',
-        -20..0    => 'Freezing your pee before it hits the ground COLD',
-        0..15     => "Colder than a witch's tit. Stay inside.",
-        15..25    => 'Freeze your tits off cold. Layers!',
-        25..29    => 'Coors Light Optimum Temperature. Bundle up.',
-        29..32    => 'A cunt hair below freezing',
-        32..32    => 'Exactly: Freezing',
-        32..34    => 'A cunt hair shy of freezing. Check your faucets!',
-        34..40    => 'Cold as fuck. Grab a jacket',
-        40..50    => 'A litle chilly. Grab a sweater',
-        50..60    => 'Mild, on the chill side',
-        60..70    => 'Perfectly Mild',
-        70..80    => 'Absolutely Beautiful',
-        80..90    => 'Shorts & T-shirt weather',
-        90..100   => 'Heating up pretty solidly. Pets come inside',
-        100..110  => 'Hot as fuck',
-        110..120  => "Approaching Satan's Comfort Level",
-        120..130  => 'A fucking Inferno',
-        (130..)   => 'Literally in flames'
-      }
-    }.freeze
+    TEMP_EXCLAMATIONS = JSON.parse(BougyBot::ROOT.join('data/temp_sayings.json').read).freeze
 
     def self.included(klass)
       klass.extend ClassMethods
     end
 
     module ClassMethods
-      def temp_exclamation(temp, units)
-        te = TEMP_EXCLAMATIONS[units]
-        return 'An impossible temperature. What the hell is going on there?' unless te
+      def exclamation_hash
+        @exclamation_hash ||= TEMP_EXCLAMATIONS.keys.each_with_object({}) do |key, obj|
+          obj[key] = TEMP_EXCLAMATIONS[key].keys.each_with_object({}) do |rkey, robj|
+            min, max = rkey.split('..').map(&:to_i)
+            robj[min..max] = TEMP_EXCLAMATIONS[key][rkey]
+          end
+        end
+      end
 
-        te[te.keys.detect { |k| k.cover? temp }]
+      def temp_exclamation(temp, units)
+        te = exclamation_hash[units]
+        return '' unless te
+
+        match = te[te.keys.detect { |k| k.cover? temp }]
+        return 'An indescribable temperature' unless match
+
+        match.sample
       end
 
       def display_for_zip(zip, newlines: true)

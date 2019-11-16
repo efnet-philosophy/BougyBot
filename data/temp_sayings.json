@@ -1,0 +1,78 @@
+{
+  "imperial": {
+    "-1000..-90": [
+      "As if you landed on Uranus. No heat whatsoever."
+    ],
+    "-100..-80": [
+      "As cold as it ever gets on this planet."
+    ],
+    "-80..-50": [
+      "So fucking cold just breathing will freeze your lungs"
+    ],
+    "-50..-35": [
+      "Freezing your pee before it hits the ground COLD"
+    ],
+    "-35..-20":   [
+      "Dangerously cold. Seek shelter"
+    ],
+    "-20..-17": [
+      "Cold enough to freeze vodka."
+    ],
+    "-17..-5": [
+      "Painfully cold. Exposure not recommended"
+    ],
+    "-5..0": [
+      "Unpleasantly cold"
+    ],
+    "0..15": [
+      "Colder than the nipple on a witch's tit. Stay inside."
+    ],
+    "15..25": [
+      "Freeze your tits off cold. Layers!"
+    ],
+    "25..29": [
+      "Coors Light Optimum Temperature. Bundle up."
+    ],
+    "29..32": [
+      "A cunt hair below freezing"
+    ],
+    "32..32": [
+      "Exactly: Freezing"
+    ],
+    "32..34": [
+      "A cunt hair shy of freezing. Check your faucets!"
+    ],
+    "34..40": [
+      "Cold as fuck. Grab a jacket"
+    ],
+    "40..50": [
+      "A litle chilly. Grab a sweater"
+    ],
+    "50..60": [
+      "Mild, on the chill side"
+    ],
+    "60..70": [
+      "Perfectly Mild"
+    ],
+    "70..80": [
+      "Absolutely Beautiful"
+    ],
+    "80..90": [
+      "Shorts & T-shirt weather"
+    ],
+    "90..100": [
+      "Heating up pretty solidly. Pets come inside"
+    ],
+    "100..110": [
+      "Hot as fuck"
+    ],
+    "110..120": [
+      "Approaching Satan's Comfort Level"],
+    "120..130": [
+      "A fucking Inferno"
+    ],
+    "130..": [
+      "Literally in flames"
+    ]
+  }
+}
