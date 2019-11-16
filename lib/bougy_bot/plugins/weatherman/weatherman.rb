@@ -38,7 +38,8 @@ module BougyBot
                  BougyBot::Zone.lookup_city place
                end
         return m.reply "Nothing found for #{query}" unless zone
-        m.reply OpenWeather.display_for_zone(zone)&.tr("\n", ' ')
+
+        m.reply OpenWeather.display_for_zone zone, newlines: false
       rescue StandardError => e
         m.reply "Error #{e} fetching weather for #{query}"
         return if m.user.nick != 'bougyman'
@@ -49,9 +50,9 @@ module BougyBot
       def zweather(m, query) # rubocop:disable Naming/UncommunicativeMethodParamName
         if (zip = query.match(/\b\d{5,6}(?:\s*,\s*\w\w)?\b|\w\w\w \w\w\w/))
           z = zip[0].match?(/\w\w\w \w\w\w/) ? "#{zip[0].split.first},ca" : zip[0]
-          m.reply OpenWeather.display_for_zip(z)&.tr("\n", ' ')
+          m.reply OpenWeather.display_for_zip z, newlines: false
         else
-          m.reply OpenWeather.display_for_zip(query)&.tr("\n", ' ')
+          m.reply OpenWeather.display_for_zip query, newlines: false
         end
       rescue StandardError => e
         m.reply "Error #{e} fetching weather for #{query}"
@@ -62,25 +63,6 @@ module BougyBot
 
       def forecast(m, query) # rubocop:disable Naming/UncommunicativeMethodParamName
         m.reply "Sorry, No forecasting available yet for #{query} (WIP)"
-      end
-
-      private
-
-      def get_weather(query)
-        weather = Weather.new(query)
-        return "No data available for #{query}" unless weather.weather && weather.station
-
-        weather << " #{Forecast.new(query).append}" if @append
-        debug "#{@append}  #{config}"
-        weather
-      rescue ArgumentError
-        "Sorry, couldn't find #{query}."
-      end
-
-      def get_forecast(query)
-        Forecast.new(query).to_s
-      rescue ArgumentError
-        "Sorry, couldn't find #{query}."
       end
     end
   end
