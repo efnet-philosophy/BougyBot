@@ -3,7 +3,6 @@
 require 'cinch'
 require 'cinch/cooldown'
 require 'time-lord'
-require 'weather-underground'
 
 module BougyBot
   L 'open_weather'
@@ -11,19 +10,17 @@ module BougyBot
     # Cinch Plugin to report weather
     class Weatherman
       include Cinch::Plugin
-
       enforce_cooldown
 
       self.help = 'Use .w <zip> to see information on the weather.'
 
       def initialize(*args)
         super
-        @append =
-          if config.key?(:append_forecast)
-            config[:append_forecast]
-          else
-            false
-          end
+        @append = if config.key?(:append_forecast)
+                    config[:append_forecast]
+                  else
+                    false
+                  end
       end
 
       match(/(?:wz|zweather) (.+)/, method: :zweather)
@@ -33,29 +30,31 @@ module BougyBot
       def qweather(m, query) # rubocop:disable Naming/UncommunicativeMethodParamName
         place, code = query.split(/\s*,\s*/, 2)
         zone = if code && code.size == 2
-                 BougyBot::Zone.lookup_city place, code.upcase
+                 Zone.lookup_city place, code.upcase
                else
-                 BougyBot::Zone.lookup_city place
+                 Zone.lookup_city place
                end
         return m.reply "Nothing found for #{query}" unless zone
 
-        m.reply OpenWeather.display_for_zone zone, newlines: false
+        m.reply BougyBot::Weather.display_for_zone zone, newlines: false
       rescue StandardError => e
-        m.reply "Error #{e} fetching weather for #{query}"
+        msg = "[Error!] #{e} fetching weather for query: '#{query}'."
+        msg << " Zone which errored: #{zone.full_name}. Complain to bougyman" if zone
+        m.reply msg
         return if m.user.nick != 'bougyman'
 
         m.user.send e.backtrace
       end
 
       def zweather(m, query) # rubocop:disable Naming/UncommunicativeMethodParamName
-        if (zip = query.match(/\b\d{5,6}(?:\s*,\s*\w\w)?\b|\w\w\w \w\w\w/))
-          z = zip[0].match?(/\w\w\w \w\w\w/) ? "#{zip[0].split.first},ca" : zip[0]
-          m.reply OpenWeather.display_for_zip z, newlines: false
+        if (zip = query.match(/\b\d\d\d+(?:\s*,\s*\w\w)?\b|\b\w\w\w \w\w\b/))
+          z = zip[0].match?(/\b\w\w\w \w\w\w\b/) ? "#{zip[0].split.first},ca" : zip[0]
+          m.reply BougyBot::Weather.display_for_zip z, newlines: false
         else
-          m.reply OpenWeather.display_for_zip query, newlines: false
+          m.reply BougyBot::Weather.display_for_zip query, newlines: false
         end
       rescue StandardError => e
-        m.reply "Error #{e} fetching weather for #{query}"
+        m.reply "[Error!] #{e} fetching weather by zip code: #{query}"
         return if m.user.nick != 'bougyman'
 
         m.user.send e.backtrace

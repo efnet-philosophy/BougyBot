@@ -63,7 +63,7 @@ module BougyBot
     end
 
     def self.find_by_zip(zip, code = 'US')
-      find(zip: /^#{zip}/, country_code: code)
+      find(zip: /^#{zip}/, country_code: code.upcase)
     end
 
     def self.lookup_latlon(lat, lon)

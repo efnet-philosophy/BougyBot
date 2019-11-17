@@ -26,7 +26,8 @@ class OpenWeather
     return OpenStruct.new(error: "No response for #{query} from #{base_uri}/weather") unless resp
 
     @weather = OpenStruct.new(resp)
-    @weather.error = "Error for query '#{query}': #{@weather.message}" if @weather.cod == '404'
+    raise "Error for query '#{query}': #{@weather.message}" if @weather.cod == '404'
+
     @weather
   end
 
@@ -45,13 +46,14 @@ class OpenWeather
     return weather.error if weather.error
 
     main = OpenStruct.new weather.main
-    temp = main.temp
+    tempf = main.temp
+    temp = format '%<f>0.2fF / %<c>0.2fC', f: tempf, c: self.class.f_to_c(tempf)
     @params = OpenStruct.new sys: OpenStruct.new(weather.sys),
                              main: main,
                              temp: temp,
                              wind: OpenStruct.new(weather.wind),
                              unit: UNITS[units],
-                             exclamation: self.class.temp_exclamation(temp, units)
+                             exclamation: self.class.temp_exclamation(tempf, 'imperial')
     @zone ||= BougyBot::Zone.lookup_latlon(*weather.coord.values_at('lat', 'lon'))
     super
   end

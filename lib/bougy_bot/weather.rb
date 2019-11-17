@@ -41,7 +41,23 @@ module BougyBot
       klass.extend ClassMethods
     end
 
+    def self.display_for_zip(zip, newlines: true)
+      OpenWeather.display_for_zip zip, newlines: newlines
+    end
+
+    def self.display_for_query(query, newlines: true)
+      OpenWeather.display_for_query query, newlines: newlines
+    end
+
+    def self.display_for_zone(zone, newlines: true)
+      OpenWeather.display_for_zone zone, newlines: newlines
+    end
+
     module ClassMethods
+      def f_to_c(float)
+        ((float - 32) * 5) / 9.0
+      end
+
       def exclamation_hash
         @exclamation_hash ||= TEMP_EXCLAMATIONS.keys.each_with_object({}) do |key, obj|
           obj[key] = TEMP_EXCLAMATIONS[key].keys.each_with_object({}) do |rkey, robj|
@@ -113,7 +129,8 @@ module BougyBot
 
     def weather_by_query(query)
       city, country = query.split(/\s*,\s*/)
-      @zone ||= BougyBot::Zone.lookup_city city, country
+      zon = BougyBot::Zone.lookup_city city, country
+      raise "Nothing found, querying for #{query}" unless zon
 
       weather_for_zone(zon)
     end

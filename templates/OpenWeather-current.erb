@@ -1,4 +1,4 @@
-It's currently <%= p.exclamation %> (<%= p.temp %><%= p.unit.temp %>) in <%= zone.full_name %> with <%= p.main.humidity %>% humidity.
+It's currently <%= p.exclamation %> (<%= p.temp %>) in <%= zone.full_name %> with <%= p.main.humidity %>% humidity.
 Pressure is <%= p.main.pressure %> <%= p.unit.pressure %>.
 <% if weather.visibility %>Visibility of <%= weather.visibility %> <%= p.unit.distance %>.<% else %>Zero Visibility!<% end %>
 Wind from the <%= self.class.direction_from_degree(p.wind.deg) %> at <%= p.wind.speed %> <%= p.unit.speed %><% if p.wind.gust %> gusting to <%= p.wind.gust %><% end %>.
