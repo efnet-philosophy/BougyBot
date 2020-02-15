@@ -50,6 +50,8 @@ module BougyBot
       end
 
       def danceoff(m, msg)
+        return m.action DANCES.sample
+
         return if authenticated? m, :enemies
         return unless @subops
         return if @ignored.include? m.user.nick
