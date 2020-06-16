@@ -25,6 +25,7 @@ module BougyBot
 
     def self.states
       @states ||= DB[:admin1_us].with_sql('select distinct(state_code) from admin1_us').all.map do |s|
+        binding.pry
         s[:state_code]
       end
     end

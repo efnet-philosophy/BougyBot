@@ -3,8 +3,11 @@
 require 'sequel'
 require 'thread'
 require 'pry-remote'
+puts "Loading library"
 require_relative './lib/bougy_bot'
+puts "Loading db"
 require_relative './db/init'
+puts "Loading cinch"
 BougyBot::L 'cinch'
 
 def clever(h = {})
@@ -27,6 +30,8 @@ end
 
 if $PROGRAM_NAME == __FILE__
   require 'pry'
+  puts "Setting up bot"
   u = useful
+  puts "Starting up bot"
   u.start
 end

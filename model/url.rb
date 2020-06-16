@@ -127,17 +127,19 @@ module BougyBot
       @uri ||= URI.parse(original)
     end
 
-    def url_filtered?(wikipedia, youtube)
+    def url_filtered?(wikipedia, youtube, twitter)
       return true if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return true if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      return true if original =~ %r{https?://((www|mobile)\.)?twitter.com/[^/]*/status/\d+} && twitter
       return true if uri.host == 'sci-hub.cc'
       false
     end
 
-    def filtered_url(wikipedia, youtube)
+    def filtered_url(wikipedia, youtube, twitter)
       return 'A link to some paper or other science document at the sci-hub sponsored by Moscow' if uri.host == 'sci-hub.cc'
       return wikipedia_synopsis if original =~ %r{https?://en\.wikipedia\.org/wiki/} && wikipedia
       return youtube_synopsis   if original =~ %r{https?://(www\.youtube\.com/watch\?|youtu.be/)} && youtube
+      return twitter_synopsis   if original =~ %r{https?://((www|mobile)\.)?twitter.com/[^/]*/status/\d+} && twitter
       raise "Why was a filter called? #{original} #{head.content_type}"
     end
 
@@ -151,9 +153,9 @@ module BougyBot
       end
     end
 
-    def fetch_title(wikipedia = true, youtube = true)
+    def fetch_title(wikipedia = true, youtube = true, twitter = true)
       return http_fetch_title if uri.host == 'photos.app.goo.gl'
-      return filtered_url(wikipedia, youtube) if url_filtered?(wikipedia, youtube)
+      return filtered_url(wikipedia, youtube, twitter) if url_filtered?(wikipedia, youtube, twitter)
       return "Some stupid #{head.content_type} that no one cares about" unless head.content_type =~ /text/ && uri.host != 'photos.app.goo.gl'
       return "Some giant web page #{head.content_length} bytes long that no one cares about" if head.content_length && head.content_length > 100_000_000
       http_fetch_title
@@ -179,6 +181,19 @@ module BougyBot
       format('\'%s\' (%s views)%s', video.title, video.view_count, description)
     rescue
       'Error fetching youtube title'
+    end
+
+    def twitter_synopsis
+      require 'mechanize'
+      agent = Mechanize.new
+      parsed = URI.parse original
+      res = agent.get(File.join('https://twitter.com', parsed.path))
+      if res.forms.size == 2
+        newres = res.forms.first.submit
+        title = newres.css('//div[class="dir-ltr"]')&.first&.text
+        return title.strip if title
+      end
+      "Some tweet that twitter isn't giving a title for"
     end
 
     def wikipedia_synopsis

@@ -97,6 +97,7 @@ module BougyBot
         return if m.user.nick =~ /^#{target}$/i
         res = allowed_to_kick(m, target)
         return unless res
+        Log.info "#{target} banned by #{res} (as #{m.user})"
         if res.respond_to? :last
           message ||= "Kicking by #{m.user}'s request: "
           if res.first > res.last
@@ -211,7 +212,7 @@ module BougyBot
         binding.pry if @chatty
         @protected << target
         Timer(30, shots: 1) { @protected.delete target }
-        true
+        auth_user
       end
 
       def voice_versus_voice(m, kicker, kickee, ftype = 'battle', fdefense = 'defense')

@@ -5,4 +5,5 @@ exec 2>&1
 . ~/.rvm/scripts/rvm
 cd $ROOT
 rvm use $(<.ruby-version)@$(<.ruby-gemset)
+echo "Starting bot"
 exec chpst -e $here/env ruby ./bot.rb 2>&1
