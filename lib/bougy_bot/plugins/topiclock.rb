@@ -22,7 +22,7 @@ module BougyBot
         topic_file = Pathname('json/filtered_topics.json').expand_path
         if topic_file.exist?
           loaded_topics = JSON.parse(topic_file.read).map do |r|
-            Regexp.compile r
+            Regexp.compile r, true
           end
           default_filters += loaded_topics
         else
