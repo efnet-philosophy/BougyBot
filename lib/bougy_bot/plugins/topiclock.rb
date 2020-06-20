@@ -34,6 +34,7 @@ module BougyBot
         Timer(300) do
           @filtered_topics = load_topic_filters
         end
+        @filtered_topics
       end
 
       def load_nick_filters
@@ -52,6 +53,7 @@ module BougyBot
         Timer(300) do
           @filtered_nicks = load_nick_filters
         end
+        @filtered_nicks
       end
 
       def initialize(*args)
