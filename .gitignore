@@ -11,3 +11,4 @@ sv/bot/log/@*
 sv/bot/log/current
 sv/**/supervise
 sv/**/lock
+json/

@@ -35,7 +35,7 @@ module BougyBot
         return @filtered_topics if @filtered_topics
 
         @filtered_topics = load_topic_filters
-        Timer(300) do
+        Timer(TIMEOUT) do
           @filtered_topics = load_topic_filters
         end
         @filtered_topics
@@ -58,7 +58,7 @@ module BougyBot
         return @filtered_nicks if @filtered_nicks
 
         @filtered_nicks = load_nick_filters
-        Timer(300) do
+        Timer(TIMEOUT) do
           @filtered_nicks = load_nick_filters
         end
         @filtered_nicks
@@ -92,18 +92,23 @@ module BougyBot
         nick = m.user.nick
         @current_topic ||= "Placeholder topic"
         return true if @current_topic == message
+
+        bougy.send "Filtered nicks: #{filtered_nicks}"
         if filtered_nicks.include? nick
           bougy.send "Found filtered nick: #{nick}"
           m.channel.send("#{nick}: Nice try, no cigar. You lost your privileges")
           m.channel.topic = @current_topic
           return false
         end
+
+        bougy.send "Filtered topics: #{filtered_topics}"
         if filtered_topics.detect { |t| message.match? t }
           bougy.send "Found filtered message: #{message}"
           m.channel.send("#{m.user.nick}: Not a fan of that topic. Try again")
           m.channel.topic = @current_topic
           return false
         end
+
         @current_topic = message
         false
       rescue => e
