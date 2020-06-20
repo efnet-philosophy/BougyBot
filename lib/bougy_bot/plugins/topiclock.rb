@@ -17,13 +17,17 @@ module BougyBot
       FILTERED_NICKS = %w{chiyou}.freeze
 
       def load_topic_filters
-        if File.exist?('json/filtered_topics.json')
-          loaded_nicks = JSON.parse(File.read('json/filtered_topics.json')).map do |r|
+        default_filters = FILTERED_TOPICS.dup
+        bougy = User('bougyman')
+        topic_file = Pathname('json/filtered_topics.json').expand_path
+        if topic_file.exist?
+          loaded_topics = JSON.parse(topic_file.read).map do |r|
             Regexp.compile r
           end
-          FILTERED_NICKS.dup << loaded_nicks
+          default_filters += loaded_topics
         else
-          FILTERED_TOPICS.dup
+          bougy.send("Could not find #{topic_file}, falling back to #{FILTERED_TOPICS}")
+          default_filters
         end
       end
 
@@ -38,11 +42,15 @@ module BougyBot
       end
 
       def load_nick_filters
-          if File.exist?('json/filtered_nicks.json')
-            loaded_nicks = JSON.parse(File.read('json/filtered_nicks.json'))
-            FILTERED_NICKS.dup << loaded_nicks
+          default_filters = FILTERED_NICKS.dup
+          bougy = User('bougyman')
+          nick_file = Pathname('json/filtered_nicks.json').expand_path
+          if nick_file.exist?
+            loaded_nicks = JSON.parse(nick_file.read)
+            default_filters += loaded_nicks
           else
-            FILTERED_NICKS.dup
+            bougy.send("Could not find #{nick_file}, falling back to #{FILTERED_NICKS}")
+            default_filters
           end
       end
 
@@ -85,13 +93,13 @@ module BougyBot
         @current_topic ||= "Placeholder topic"
         return true if @current_topic == message
         if filtered_nicks.include? nick
-          bougy.send "Checking filtered nicks. nick is #{nick}"
+          bougy.send "Found filtered nick: #{nick}"
           m.channel.send("#{nick}: Nice try, no cigar. You lost your privileges")
           m.channel.topic = @current_topic
           return false
         end
         if filtered_topics.detect { |t| message.match? t }
-          bougy.send "Checking filtered messages. message is #{message}"
+          bougy.send "Found filtered message: #{message}"
           m.channel.send("#{m.user.nick}: Not a fan of that topic. Try again")
           m.channel.topic = @current_topic
           return false
