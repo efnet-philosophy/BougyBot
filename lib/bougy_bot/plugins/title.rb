@@ -17,7 +17,7 @@ module BougyBot
       include Cinch::Extensions::Authentication
       enforce_cooldown
 
-      listen_to :channel
+      listen_to :channel, :topic
       match(/^!share_limit (\d+) (.*)$/, method: :share_limit!, use_prefix: false)
       def initialize(*args)
         @abuse = {}
