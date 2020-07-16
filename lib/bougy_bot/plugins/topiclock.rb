@@ -13,8 +13,8 @@ module BougyBot
       match(/topic (.*)$/, method: :topic)
       listen_to :topic
 
-      FILTERED_TOPICS = [ /nigger/ ].freeze
-      FILTERED_NICKS = %w{chiyou}.freeze
+      FILTERED_TOPICS = [ /nigger/i ].freeze
+      FILTERED_NICKS = [ /chiyou/ ].freeze
 
       def load_topic_filters
         default_filters = FILTERED_TOPICS.dup
@@ -42,16 +42,18 @@ module BougyBot
       end
 
       def load_nick_filters
-          default_filters = FILTERED_NICKS.dup
-          bougy = User('bougyman')
-          nick_file = Pathname('json/filtered_nicks.json').expand_path
-          if nick_file.exist?
-            loaded_nicks = JSON.parse(nick_file.read)
-            default_filters += loaded_nicks
-          else
-            bougy.send("Could not find #{nick_file}, falling back to #{FILTERED_NICKS}")
-            default_filters
+        default_filters = FILTERED_NICKS.dup
+        bougy = User('bougyman')
+        nick_file = Pathname('json/filtered_nicks.json').expand_path
+        if nick_file.exist?
+          loaded_nicks = JSON.parse(nick_file.read).map do |r|
+            Regexp.compile r, true
           end
+          default_filters += loaded_nicks
+        else
+          bougy.send("Could not find #{nick_file}, falling back to #{FILTERED_NICKS}")
+          default_filters
+        end
       end
 
       def filtered_nicks
