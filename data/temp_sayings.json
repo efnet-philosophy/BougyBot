@@ -7,22 +7,22 @@
       "As cold as it ever gets on this planet."
     ],
     "-80..-50": [
-      "So fucking cold just breathing will freeze your lungs"
+      "So fucking cold just breathing will freeze your lungs."
     ],
     "-50..-35": [
-      "Freezing your pee before it hits the ground COLD"
+      "Freezing your pee before it hits the ground COLD."
     ],
     "-35..-20":   [
-      "Dangerously cold. Seek shelter"
+      "Dangerously cold. Seek shelter if you're homeless."
     ],
     "-20..-17": [
-      "Cold enough to freeze vodka."
+      "Cold enough to kill bums."
     ],
     "-17..-5": [
-      "Painfully cold. Exposure not recommended"
+      "Cold enough to freeze your face after you forget to dry it then walk outside."
     ],
     "-5..0": [
-      "Unpleasantly cold"
+      "Cold enough for you to wonder if any bums are dead."
     ],
     "0..15": [
       "Colder than the nipple on a witch's tit. Stay inside."
@@ -34,45 +34,50 @@
       "Coors Light Optimum Temperature. Bundle up."
     ],
     "29..32": [
-      "A cunt hair below freezing"
+      "A cunt hair below freezing."
     ],
     "32..32": [
-      "Exactly: Freezing"
+      "Exactly freezing."
     ],
     "32..34": [
       "A cunt hair shy of freezing. Check your faucets!"
     ],
     "34..40": [
-      "Cold as fuck. Grab a jacket"
+      "Coldish. Grab a jacket."
     ],
     "40..50": [
-      "A litle chilly. Grab a sweater"
+      "A litle chilly. Grab a sweater or drink more vodka."
     ],
     "50..60": [
-      "Mild, on the chill side"
+      "Mild, on the chilly side."
     ],
     "60..70": [
-      "Perfectly Mild"
+      "The most perfect temperature range there is."
     ],
     "70..80": [
-      "Absolutely Beautiful"
+      "Pretty, but a shade warmer than perfect."
     ],
     "80..90": [
-      "Shorts & T-shirt weather"
+      "Boat, shorts, t-shirt, beer, and tanning weather."
     ],
     "90..100": [
-      "Heating up pretty solidly. Pets come inside"
+      "Hot as fuck, but not quite hot as balls.",
+      "Hot as fuck. Probably summer in Texas",
+      "Hot. It's still fucking hot. This heat fucking sucks."
     ],
     "100..110": [
-      "Hot as fuck"
+      "Hot as balls.",
+      "Hot as balls. Must be summer in Texas",
+      "Hot as balls. How many fucking days has it been so far anyway?"
     ],
     "110..120": [
-      "Approaching Satan's Comfort Level"],
+      "Approaching Satan's Comfort Level"
+    ],
     "120..130": [
-      "A fucking Inferno"
+      "Death Valley shit."
     ],
     "130..": [
-      "Literally in flames"
+      "Middle East shit."
     ]
   }
 }
