@@ -100,13 +100,8 @@ module BougyBot
         Log.info "#{target} banned by #{res} (as #{m.user})"
         if res.respond_to? :last
           message ||= "Kicking by #{m.user}'s request: "
-          if res.first > res.last
-            message = "#{messsage} No banning of subops, but you did win a Kick -> (#{res.first} > #{res.last})"
-            m.channel.kick target, message
-          else
-            message = "#{message} No banning of subops, #{m.user.nick}, you loser -> (#{res.last} > #{res.first})"
-            m.channel.kick m.user.nick, message
-          end
+          message = "#{message} No banning of subops, but you did win a Kick"
+          m.channel.kick target, message
         else
           message ||= "Banned by #{m.user}'s request"
           banee = nick_to_user(m.channel, target)

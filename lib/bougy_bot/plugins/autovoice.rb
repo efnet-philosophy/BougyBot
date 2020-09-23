@@ -20,7 +20,7 @@ module BougyBot
       ANSWERS = {}
       AUTHORS = BougyBot::Quote.distinct(:author).where(author: /^\w[\w ]*$/).select_map(:author)
 
-      listen_to :join
+      listen_to :join, method: :listen
       match(/autovoice (on|off)$/)
       match(/voice ([^\s]*)$/, method: :voice)
       match(/voiceme (.*)?$/, method: :voiceme)
@@ -54,34 +54,18 @@ module BougyBot
 
       def listen(m)
         user = m.user
+        return if user.nick =~ /hiyou/
         return if user.nick == bot.nick
+        warn "#{user.nick} joined #{m.channel}"
         if @autovoice
           nick = user.nick
           time = 30
           time = 120 if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
           warn "Setting voice timer for #{nick} (#{user.mask} to #{time}"
-          Timer.new(time, shots: 1) { m.channel.voice(nick) }
-        else
-          return unless m.channel.name == '#philosophy'
-          # m.user.msg 'Hey, we are moderated because dionysus is an asshat. If you want voice, ask in #pho:'
-          # if user.host !~ /^\d+\.\d+\.\d+\.\d+$/
-          #   op, num1, num2, answer = math_problem(user.nick)
-          #   m.user.msg 'Hey, we are moderated because dionysus is an asshat. If you want voice, you must solve the math problem:'
-          #   m.user.msg "What is #{num1} #{op} #{num2}?"
-          # else
-          #   begin
-          #     #quote = quote_author(user.nick)
-          #     #m.user.msg "Who said '#{quote.shift}'?"
-          #     #m.user.msg "Choices are: #{quote.join(', ')}"
-          #   rescue => e
-          #     if m.user.nick =~ /^bougy/
-          #       m.user.msg e
-          #       m.user.msg e.backtrace.join('\n')
-          #     end
-          #   end
-          # end
-          #m.user.msg "/msg #{bot.nick} !voiceme <theanswer> to me for voice."
+          Timer(time, shots: 1) { m.channel.voice(nick) }
         end
+        u = User.find nick: user.nick
+        m.reply("<#{user.nick}> #{u.tagline}") if u.tagline
       end
 
       def voice(m, option)

@@ -95,7 +95,7 @@ module BougyBot
         @current_topic ||= "Placeholder topic"
         return true if @current_topic == message
 
-        bougy.send "Filtered nicks: #{filtered_nicks}"
+        # bougy.send "Filtered nicks: #{filtered_nicks}"
         if filtered_nicks.include? nick
           bougy.send "Found filtered nick: #{nick}"
           m.channel.send("#{nick}: Nice try, no cigar. You lost your privileges")
@@ -103,7 +103,7 @@ module BougyBot
           return false
         end
 
-        bougy.send "Filtered topics: #{filtered_topics}"
+        # bougy.send "Filtered topics: #{filtered_topics}"
         if filtered_topics.detect { |t| message.match? t }
           bougy.send "Found filtered message: #{message}"
           m.channel.send("#{m.user.nick}: Not a fan of that topic. Try again")
