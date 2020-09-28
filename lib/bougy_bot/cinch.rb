@@ -142,6 +142,8 @@ module BougyBot
         c.authentication.admins =  lambda { |user| user.level.to_sym == :admin }
         c.authentication.subops =  lambda { |user| user.level.to_sym == :subop }
         c.authentication.users =   lambda { |user| user.level.to_sym == :user }
+        c.authentication.users =   lambda { |user| user.level.to_sym == :voice }
+        c.authentication.users =   lambda { |user| user.level.to_sym == :devoice }
         c.authentication.enemies = lambda { |user| user.level.to_sym == :enemy }
         c.nicks = [BougyBot.options[:nick], *@quotes.map { |q| q.author.split.last[0, 9].downcase }].compact
         c.user = @quotes.sample.author.split.first.downcase

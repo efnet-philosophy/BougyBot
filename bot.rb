@@ -23,7 +23,7 @@ def useful(h = {})
   channels = h[:channels] || BougyBot.options.channels
   b = BougyBot::Cinch.new((h[:server] || BougyBot.options.server), channels)
 
-  b.bot.loggers << ::Cinch::Logger::FormattedLogger.new(File.open('useful.log', 'w'))
+  b.bot.loggers << ::Cinch::Logger::FormattedLogger.new($stdout)
   b.bot.loggers = b.bot.loggers.last
   b
 end

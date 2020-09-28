@@ -21,7 +21,8 @@ module BougyBot
       AUTHORS = BougyBot::Quote.distinct(:author).where(author: /^\w[\w ]*$/).select_map(:author)
 
       listen_to :join, method: :listen
-      match(/autovoice (on|off)$/)
+      listen_to :devoice, method: :devoiced
+      match(/autovoice(?: (on|off))?$/)
       match(/voice ([^\s]*)$/, method: :voice)
       match(/voiceme (.*)?$/, method: :voiceme)
       match(/devoice ([^\s]*)$/, method: :devoice)
@@ -33,7 +34,13 @@ module BougyBot
 
       def initialize(*args)
         super
-        @autovoice = false
+        @autovoice = true
+        @devoiced_users = []
+      end
+
+      def devoiced(m, user)
+        @devoiced_users << user unless @devoiced_users.include? user
+        Timer(600, shots: 1) { @devoiced_users.delete user if @devoiced_users.include? user }
       end
 
       def math_problem(nick)
@@ -52,20 +59,35 @@ module BougyBot
         [q, *all_authors.sort_by { |_, _| rand(100) <=> rand(100) } ]
       end
 
+      def set_voice_timer(m, user)
+        if @devoiced_users.include? user
+          return m.reply "!!! #{user.nick} is currently not being autovoiced due to 'reasons'. Please do not voice (or op) this user !!!"
+        end
+        randt = rand(60)
+        time = randt
+        time = (randt + 100) if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
+        warn "Setting voice timer for #{user.nick} (#{user.mask} to #{time}"
+        Timer(time, shots: 1) { voice_nick(m.channel, user.nick) }
+      end
+
       def listen(m)
         user = m.user
         return if user.nick =~ /hiyou/
         return if user.nick == bot.nick
+
+        nick = user.nick
         warn "#{user.nick} joined #{m.channel}"
-        if @autovoice
-          nick = user.nick
-          time = 30
-          time = 120 if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
-          warn "Setting voice timer for #{nick} (#{user.mask} to #{time}"
-          Timer(time, shots: 1) { m.channel.voice(nick) }
-        end
-        u = User.find nick: user.nick
-        m.reply("<#{user.nick}> #{u.tagline}") if u.tagline
+        set_voice_timer(m, user) if @autovoice
+        u = User.find nick: nick
+        m.reply("<#{nick}> #{u.tagline}") if u.tagline
+      end
+
+      def voice_nick(channel, nick)
+        found_user = channel.users.detect { |k| k.first.nick == nick }
+        return unless found_user
+        return if found_user.last.include? 'v'
+
+        channel.voice(nick)
       end
 
       def voice(m, option)
