@@ -36,11 +36,15 @@ module BougyBot
         super
         @autovoice = true
         @devoiced_users = []
+        @devoiced_users_announced = []
       end
 
       def devoiced(m, user)
         @devoiced_users << user unless @devoiced_users.include? user
-        Timer(600, shots: 1) { @devoiced_users.delete user if @devoiced_users.include? user }
+        Timer(600, shots: 1) do
+          @devoiced_users.delete user if @devoiced_users.include? user
+          @devoiced_users_announced.delete user if @devoiced_users_announced.include? user
+        end
       end
 
       def math_problem(nick)
@@ -61,7 +65,11 @@ module BougyBot
 
       def set_voice_timer(m, user)
         if @devoiced_users.include? user
-          return m.reply "!!! #{user.nick} is currently not being autovoiced due to 'reasons'. Please do not voice (or op) this user !!!"
+          return if @devoiced_users_announced.include? user
+
+          @devoiced_users_announced.include?(user) || @devoiced_users_announced << user
+          m.reply "!!! #{user.nick} is currently not being autovoiced due to 'reasons'. Please do not voice (or op) this user !!!"
+          return
         end
         randt = rand(60)
         time = randt
