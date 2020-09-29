@@ -75,7 +75,7 @@ module BougyBot
         time = randt
         time = (randt + 100) if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
         warn "Setting voice timer for #{user.nick} (#{user.mask} to #{time}"
-        Timer(time, shots: 1) { voice_nick(m.channel, user.nick) }
+        Timer(time, shots: 1) { voice_user(m.channel, user) }
       end
 
       def listen(m)
@@ -90,12 +90,14 @@ module BougyBot
         m.reply("<#{nick}> #{u.tagline}") if u.tagline
       end
 
-      def voice_nick(channel, nick)
-        found_user = channel.users.detect { |k| k.first.nick == nick }
+      def voice_user(channel, user)
+        return if @devoiced_users.include? user
+
+        found_user = channel.users.detect { |k| k.first.nick == user.nick }
         return unless found_user
         return if found_user.last.include? 'v'
 
-        channel.voice(nick)
+        channel.voice(user.nick)
       end
 
       def voice(m, option)
