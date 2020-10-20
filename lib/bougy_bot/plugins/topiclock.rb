@@ -68,16 +68,19 @@ module BougyBot
 
       def initialize(*args)
         super
-        @tlock = true
+        @lock_time = Time.now
+        @tlock = false
       end
 
       def topic(m, option)
-        return unless authenticated? m
+        now = Time.now
+        tsecs = now - @lock_time
+        rsecs = 300 + rand(300)
+        if tsecs < rsecs
+          dsecs = (rsecs - tsecs).to_i
+          return(m.user.notice("You may set a new topic in approximately #{dsecs} seconds without logging in")) unless authenticated? m
+        end
         m.channel.topic = option
-        #m.channel.mode '+t'
-        #Timer(TIMEOUT, shots: 1) do
-        #  m.channel.mode '-t'
-        #end
       rescue => e
         m.reply e
       end
@@ -124,9 +127,14 @@ module BougyBot
         # bougy.send "Heard topic #{m}"
         return unless m.command == 'TOPIC'
         return if filter_topic! m
-        m.channel.mode '+t'
-        Timer(TIMEOUT, shots: 1) do
-          m.channel.mode '-t'
+
+        @lock_time = Time.now
+
+        if @tlock
+          m.channel.mode '+t'
+          Timer(TIMEOUT, shots: 1) do
+            m.channel.mode '-t'
+          end
         end
       end
     end

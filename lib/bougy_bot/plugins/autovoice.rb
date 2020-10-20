@@ -40,10 +40,12 @@ module BougyBot
       end
 
       def devoiced(m, user)
-        @devoiced_users << user unless @devoiced_users.include? user
+        host = user.mask.host
+        warn "User #{user} : #{user.mask} (#{host}) has been devoiced"
+        @devoiced_users << host unless @devoiced_users.include? host
         Timer(600, shots: 1) do
-          @devoiced_users.delete user if @devoiced_users.include? user
-          @devoiced_users_announced.delete user if @devoiced_users_announced.include? user
+          @devoiced_users.delete host if @devoiced_users.include? host
+          @devoiced_users_announced.delete host if @devoiced_users_announced.include? host
         end
       end
 
@@ -64,16 +66,17 @@ module BougyBot
       end
 
       def set_voice_timer(m, user)
-        if @devoiced_users.include? user
-          return if @devoiced_users_announced.include? user
+        host = user.mask.host
+        if @devoiced_users.include? host
+          return if @devoiced_users_announced.include? host
 
-          @devoiced_users_announced.include?(user) || @devoiced_users_announced << user
+          @devoiced_users_announced.include?(host) || @devoiced_users_announced << host
           m.reply "!!! #{user.nick} is currently not being autovoiced due to 'reasons'. Please do not voice (or op) this user !!!"
           return
         end
         randt = rand(60)
         time = randt
-        time = (randt + 100) if user.mask.to_s =~ /@(?:[\d\.]+$|:)/
+        time = (randt + 100) if user.mask.to_s =~ /@(?:[\d\.]+$|.*:)/
         warn "Setting voice timer for #{user.nick} (#{user.mask} to #{time}"
         Timer(time, shots: 1) { voice_user(m.channel, user) }
       end
@@ -91,7 +94,7 @@ module BougyBot
       end
 
       def voice_user(channel, user)
-        return if @devoiced_users.include? user
+        return if @devoiced_users.include? user.mask.host
 
         found_user = channel.users.detect { |k| k.first.nick == user.nick }
         return unless found_user
